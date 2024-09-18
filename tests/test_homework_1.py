@@ -43,7 +43,10 @@ def test_not_found(method: str, path: str):
 )
 def test_factorial(query: dict[str, Any], status_code: int):
     response = requests.get(BASE_URL + "/factorial", params=query)
+
     assert response.status_code == status_code
+    if status_code == HTTPStatus.OK:
+        assert "result" in response.json()
 
 
 @pytest.mark.parametrize(
@@ -58,7 +61,10 @@ def test_factorial(query: dict[str, Any], status_code: int):
 )
 def test_fibonacci(params: str, status_code: int):
     response = requests.get(BASE_URL + "/fibonacci" + params)
+
     assert response.status_code == status_code
+    if status_code == HTTPStatus.OK:
+        assert "result" in response.json()
 
 
 @pytest.mark.parametrize(
@@ -73,4 +79,7 @@ def test_fibonacci(params: str, status_code: int):
 )
 def test_mean(json: dict[str, Any] | None, status_code: int):
     response = requests.get(BASE_URL + "/mean", json=json)
+
     assert response.status_code == status_code
+    if status_code == HTTPStatus.OK:
+        assert "result" in response.json()
