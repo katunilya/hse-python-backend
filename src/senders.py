@@ -1,4 +1,3 @@
-# Функция для отправки JSON ответа
 from http import HTTPStatus
 import json
 

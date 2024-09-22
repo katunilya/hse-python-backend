@@ -9,13 +9,14 @@ async def app(
         receive: Callable[[], Awaitable[dict[str, Any]]],
         send: Callable[[dict[str, Any]], Awaitable[None]]):
     """
+    !!!
     ASGI-приложение, которое обрабатывает запросы и возвращает ответы.
 
     :param scope: Словарь, содержащий информацию о запросе. Включает такие ключи, как 'method' (HTTP-метод), 'path' (маршрут запроса), 'headers' (заголовки), и т.д.
     :param receive: Асинхронная функция, которая получает события от клиента (например, данные тела запроса).
     :param send: Асинхронная функция для отправки ответа клиенту. Используется для передачи статуса, заголовков и тела ответа.
     """
-    # Проверяем, что запрос поддерживается (только HTTP-протокол)
+    # 1) Проверяем, что запрос поддерживается (только HTTP-протокол)
     if scope["type"] != "http":
         await send({
             "type": "http.response.start",
@@ -26,7 +27,7 @@ async def app(
                     "body": b'{"detail": "No support for this protocol."}'})
         return
 
-    # Получаем метод запроса и путь
+    #  2) Получаем метод запроса (GET, POST, ETC), путь (/factorial/6)
     method = scope["method"]
     path = scope["path"]
 
