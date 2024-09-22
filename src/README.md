@@ -1,8 +1,9 @@
 ## How to run
-`uvicorn filename:callable --reload`
 
-
-`uvicorn main:app --reload`
+1. `poetry install`
+2. `poetry shell`
+3.  `export PYTHONPATH=$PYTHONPATH:${PWD}/src`
+4. `uvicorn src.main:app --reload`
 
 
 
