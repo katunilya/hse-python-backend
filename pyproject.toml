@@ -10,6 +10,8 @@ python = "^3.12"
 uvicorn = "^0.30.6"
 fastapi = "^0.114.2"
 requests = "^2.32.3"
+ipykernel = "^6.29.5"
+pytest = "^8.3.3"
 
 
 [tool.poetry.group.dev.dependencies]
