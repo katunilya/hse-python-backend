@@ -29,6 +29,7 @@ import json
 #     Unprocessable Entity`
 #   - если массив пустой - возвращаем `400 Bad Request`
 
+
 def parse_query(query_string: str) -> dict[str, str]:
     query = {
         key.decode(): [v.decode() for v in value] # type: ignore
@@ -43,14 +44,14 @@ def parse_query(query_string: str) -> dict[str, str]:
 
 async def send_response(
     send: Callable[[dict[str, Any]], Awaitable[None]],
-    status: int,
-    headers: dict[str, str],
-    body: bytes
+    status: int | HTTPStatus,
+    body: bytes,
+    headers: dict[str, str] = {},
 ) -> None:
     await send(
         {
             'type': 'http.response.start',
-            'status': status,
+            'status': status.value if isinstance(status, HTTPStatus) else status,
             'headers': [
                 [key.encode(), value.encode()]
                 for key, value in headers.items()
@@ -60,28 +61,38 @@ async def send_response(
     await send({'type': 'http.response.body', 'body': body})
 
 
-
 async def send_plain(
     send: Callable[[dict[str, Any]], Awaitable[None]],
-    status: int,
-    headers: dict[str, str],
-    body: str
+    status: int | HTTPStatus,
+    body: str,
+    headers: dict[str, str] = {},
 ) -> None:
     headers |= {'content-type': 'text/plain'}
-    await send_response(send, status, headers, body.encode())
+    await send_response(send, status, body.encode(), headers)
 
 async def send_json(
     send: Callable[[dict[str, Any]], Awaitable[None]],
-    status: int,
-    headers: dict[str, str],
+    status: int | HTTPStatus,
     body: dict[str, Any],
+    headers: dict[str, str] = {},
 ) -> None:
     headers |= {'content-type': 'text/json'}
     await send_response(
-        send, status, headers,
-        json.dumps(body, ensure_ascii=False).encode()
+        send,
+        status,
+        json.dumps(body, ensure_ascii=False).encode(),
+        headers,
     )
 
+async def send_status(
+    send: Callable[[dict[str, Any]], Awaitable[None]],
+    status: int | HTTPStatus,
+    headers: dict[str, str] = {},
+):
+    if isinstance(status, int):
+        status = HTTPStatus(status)
+
+    await send_plain(send, status, status.phrase, headers)
 
 async def application(
     scope: dict[str, Any],
@@ -93,18 +104,31 @@ async def application(
     match scope:
         case {'method': 'GET', 'path': '/factorial'}:
             n = scope['query'].get('n')
-
             n = int(n) if n and n.isdecimal() else None
-
             if n is None:
-                status = HTTPStatus.UNPROCESSABLE_ENTITY
-                await send_plain(send, status.value, {}, status.phrase)
+                await send_status(send, HTTPStatus.UNPROCESSABLE_ENTITY)
             elif n < 0:
-                status = HTTPStatus.BAD_REQUEST
-                await send_plain(send, status.value, {}, status.phrase)
+                await send_status(send, HTTPStatus.BAD_REQUEST)
             else:
-                status = HTTPStatus.OK
-                await send_json(send, status.value, {}, {'result': factorial(int(n))})
+                await send_json(send, HTTPStatus.OK, {'result': factorial(int(n))})
+        #TODO: fix
+        case {'method': 'GET', 'path': path} if PurePath('/fibonacci') in PurePath(path).parents:
+            path = PurePath(path)
+            if not (
+                len(path.parts) > 2
+                and
+                path.parts[2].isdecimal()
+            ):
+                await send_status(send, HTTPStatus.UNPROCESSABLE_ENTITY)
+            elif int(path.parts[2]) < 0:
+                await send_status(send, HTTPStatus.BAD_REQUEST)
+            else:
+                n = int(path.parts[2])
+                a, b = 0, 1
+                for i in range(n):
+                    a, b = b, a + b
+                await send_json(send, HTTPStatus.OK, {'result': b}) 
+
         case _:
             status = HTTPStatus.NOT_FOUND
-            await send_plain(send, status.value, {}, status.phrase)
+            await send_plain(send, status.value, status.phrase)
