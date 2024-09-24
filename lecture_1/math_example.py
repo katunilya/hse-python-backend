@@ -1,24 +1,9 @@
-import math
 from http import HTTPStatus
-from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
 app = FastAPI()
-
-
-@app.get("/factorial")
-def get_factorial(n: Annotated[int, Query()]) -> JSONResponse:
-    if n < 0:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail="Invalid value for n, must be non-negative",
-        )
-
-    result = math.factorial(n)
-
-    return JSONResponse({"result": result})
 
 
 @app.get("/fibonacci/{n}")
