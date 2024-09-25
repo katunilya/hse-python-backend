@@ -107,7 +107,11 @@ async def application(
     match scope:
         case {'method': 'GET', 'path': '/factorial'}:
             n = scope['query'].get('n')
-            n = int(n) if n and n.isdecimal() else None
+            n = ( 
+                int(n)
+                if n and (n.isdecimal() or n.removeprefix('-').isdecimal())
+                else None
+            ) 
             if n is None:
                 await send_status(send, HTTPStatus.UNPROCESSABLE_ENTITY)
             elif n < 0:
