@@ -1,81 +1,11 @@
+import json
 from math import factorial
 from typing import Any, Awaitable, Callable
 from http import HTTPStatus
 from pathlib import PurePath
-import urllib.parse
-import json
-
-
-def parse_query(query_string: str) -> dict[str, str]:
-    query = {
-        key.decode(): [v.decode() for v in value] # type: ignore
-        for key, value in urllib.parse.parse_qs(query_string).items() # честно взято из чата :)
-    }
-
-    return { # type: ignore
-        key: value[0] if len(value) == 1 else value
-        for key, value in query.items()
-    }
-
-def is_number(x: Any) -> bool:
-    """This function only checks for real numbers 
-    and does not handle complex numbers"""
-    return isinstance(x, (int, float))
-
-def str_is_int(x: str) -> bool:
-    return x.isdecimal() or x.removeprefix('-').isdecimal()
-
-async def send_response(
-    send: Callable[[dict[str, Any]], Awaitable[None]],
-    status: int | HTTPStatus,
-    body: bytes,
-    headers: dict[str, str] = {},
-) -> None:
-    await send(
-        {
-            'type': 'http.response.start',
-            'status': status.value if isinstance(status, HTTPStatus) else status,
-            'headers': [
-                [key.encode(), value.encode()]
-                for key, value in headers.items()
-            ],
-        }
-    )
-    await send({'type': 'http.response.body', 'body': body})
-
-
-async def send_plain(
-    send: Callable[[dict[str, Any]], Awaitable[None]],
-    status: int | HTTPStatus,
-    body: str,
-    headers: dict[str, str] = {},
-) -> None:
-    headers |= {'content-type': 'text/plain'}
-    await send_response(send, status, body.encode(), headers)
-
-async def send_json(
-    send: Callable[[dict[str, Any]], Awaitable[None]],
-    status: int | HTTPStatus,
-    body: dict[str, Any],
-    headers: dict[str, str] = {},
-) -> None:
-    headers |= {'content-type': 'text/json'}
-    await send_response(
-        send,
-        status,
-        json.dumps(body, ensure_ascii=False).encode(),
-        headers,
-    )
-
-async def send_status(
-    send: Callable[[dict[str, Any]], Awaitable[None]],
-    status: int | HTTPStatus,
-    headers: dict[str, str] = {},
-):
-    if isinstance(status, int):
-        status = HTTPStatus(status)
-
-    await send_plain(send, status, status.phrase, headers)
+from .validators import is_number, str_is_int
+from .utils import parse_query
+from .responses import send_status, send_json
 
 async def application(
     scope: dict[str, Any],
@@ -134,5 +64,4 @@ async def application(
                 await send_status(send, HTTPStatus.UNPROCESSABLE_ENTITY)
 
         case _:
-            status = HTTPStatus.NOT_FOUND
-            await send_plain(send, status.value, status.phrase)
+            await send_status(send, HTTPStatus.NOT_FOUND)
