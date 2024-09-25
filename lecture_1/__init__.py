@@ -101,6 +101,7 @@ async def application(
 ) -> None:
     scope['query'] = parse_query(scope['query_string'])
 
+    print(PurePath(scope['path']).parts[:2])
     match scope:
         case {'method': 'GET', 'path': '/factorial'}:
             n = scope['query'].get('n')
@@ -112,7 +113,7 @@ async def application(
             else:
                 await send_json(send, HTTPStatus.OK, {'result': factorial(int(n))})
         #TODO: fix
-        case {'method': 'GET', 'path': path} if PurePath('/fibonacci') in PurePath(path).parents:
+        case {'method': 'GET', 'path': path} if PurePath(path).parts[:2] == ('/', 'fibonacci'):
             path = PurePath(path)
             if not (
                 len(path.parts) > 2
