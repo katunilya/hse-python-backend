@@ -33,7 +33,7 @@ import json
 def parse_query(query_string: str) -> dict[str, str]:
     query = {
         key.decode(): [v.decode() for v in value] # type: ignore
-        for key, value in urllib.parse.parse_qs(query_string).items()
+        for key, value in urllib.parse.parse_qs(query_string).items() # честно взято из чата :)
     }
 
     return { # type: ignore
@@ -41,6 +41,10 @@ def parse_query(query_string: str) -> dict[str, str]:
         for key, value in query.items()
     }
 
+def is_number(x: Any) -> bool:
+    """This function only checks for real numbers 
+    and does not handle complex numbers"""
+    return isinstance(x, (int, float))
 
 async def send_response(
     send: Callable[[dict[str, Any]], Awaitable[None]],
@@ -96,12 +100,10 @@ async def send_status(
 
 async def application(
     scope: dict[str, Any],
-    _: Callable[[], Awaitable[dict[str, Any]]],
+    receive: Callable[[], Awaitable[dict[str, Any]]],
     send: Callable[[dict[str, Any]], Awaitable[None]],
 ) -> None:
     scope['query'] = parse_query(scope['query_string'])
-
-    print(PurePath(scope['path']).parts[:2])
     match scope:
         case {'method': 'GET', 'path': '/factorial'}:
             n = scope['query'].get('n')
@@ -112,7 +114,7 @@ async def application(
                 await send_status(send, HTTPStatus.BAD_REQUEST)
             else:
                 await send_json(send, HTTPStatus.OK, {'result': factorial(int(n))})
-        #TODO: fix
+
         case {'method': 'GET', 'path': path} if PurePath(path).parts[:2] == ('/', 'fibonacci'):
             path = PurePath(path)
             if not (
@@ -128,7 +130,27 @@ async def application(
                 a, b = 0, 1
                 for i in range(n):
                     a, b = b, a + b
-                await send_json(send, HTTPStatus.OK, {'result': b}) 
+                await send_json(send, HTTPStatus.OK, {'result': b})
+
+        case {'method': 'GET', 'path': '/mean'}:
+            recv = await receive()
+            body = recv['body']
+            while (recv.get('more_body')):
+                recv = await receive()
+                body += recv['body']
+
+            try:
+                lst = json.loads(body)
+                if lst == []:
+                    await send_status(send, HTTPStatus.BAD_REQUEST)
+                elif isinstance(lst, list) and all(map(is_number, lst)):
+                    await send_json(
+                        send, HTTPStatus.OK, {'result': sum(lst) / len(lst)}
+                    )
+                else:
+                    await send_status(send, HTTPStatus.UNPROCESSABLE_ENTITY)
+            except json.JSONDecodeError:
+                await send_status(send, HTTPStatus.UNPROCESSABLE_ENTITY)
 
         case _:
             status = HTTPStatus.NOT_FOUND
