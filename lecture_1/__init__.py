@@ -46,6 +46,9 @@ def is_number(x: Any) -> bool:
     and does not handle complex numbers"""
     return isinstance(x, (int, float))
 
+def str_is_int(x: str) -> bool:
+    return x.isdecimal() or x.removeprefix('-').isdecimal()
+
 async def send_response(
     send: Callable[[dict[str, Any]], Awaitable[None]],
     status: int | HTTPStatus,
@@ -109,7 +112,7 @@ async def application(
             n = scope['query'].get('n')
             n = ( 
                 int(n)
-                if n and (n.isdecimal() or n.removeprefix('-').isdecimal())
+                if n and str_is_int(n) 
                 else None
             ) 
             if n is None:
@@ -122,9 +125,7 @@ async def application(
         case {'method': 'GET', 'path': path} if PurePath(path).parts[:2] == ('/', 'fibonacci'):
             path = PurePath(path)
             if not (
-                len(path.parts) > 2
-                and
-                path.parts[2].isdecimal()
+                len(path.parts) > 2 and str_is_int(path.parts[2])
             ):
                 await send_status(send, HTTPStatus.UNPROCESSABLE_ENTITY)
             elif int(path.parts[2]) < 0:
