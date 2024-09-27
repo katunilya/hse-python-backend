@@ -4,7 +4,7 @@
 """
 
 from http import HTTPStatus
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 import requests
@@ -77,7 +77,7 @@ def test_fibonacci(params: str, status_code: int):
         ([1.0, 2.0, 3.0], HTTPStatus.OK),
     ],
 )
-def test_mean(json: dict[str, Any] | None, status_code: int):
+def test_mean(json: Optional[dict[str, Any]], status_code: int):
     response = requests.get(BASE_URL + "/mean", json=json)
 
     assert response.status_code == status_code
