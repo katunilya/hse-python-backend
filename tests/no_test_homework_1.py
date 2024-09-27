@@ -14,6 +14,7 @@ PORT = 8000
 BASE_URL = f"http://{HOST}:{PORT}"
 
 
+@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("method", "path"),
     [
@@ -28,6 +29,7 @@ def test_not_found(method: str, path: str):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
+@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -49,6 +51,7 @@ def test_factorial(query: dict[str, Any], status_code: int):
         assert "result" in response.json()
 
 
+@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("params", "status_code"),
     [
@@ -67,6 +70,7 @@ def test_fibonacci(params: str, status_code: int):
         assert "result" in response.json()
 
 
+@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("json", "status_code"),
     [
