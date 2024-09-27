@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Annotated
 from uuid import uuid4
 
-from fastapi import Body, FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 
 app = FastAPI()
 
