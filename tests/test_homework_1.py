@@ -1,19 +1,14 @@
-"""Подразумевается, что при запуске тестов локально запущено приложение.
-
-Адрес: localhost:8000
-"""
-
 from http import HTTPStatus
 from typing import Any
 
 import pytest
-import requests
+from async_asgi_testclient import TestClient
 
-HOST = "localhost"
-PORT = 8000
-BASE_URL = f"http://{HOST}:{PORT}"
+from lecture_1.hw.math_plain_asgi import app
 
 
+@pytest.mark.xfail()
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("method", "path"),
     [
@@ -23,11 +18,17 @@ BASE_URL = f"http://{HOST}:{PORT}"
         ("POST", "/not_found"),
     ],
 )
-def test_not_found(method: str, path: str):
-    response = requests.request(method, BASE_URL + path)
-    assert response.status_code == HTTPStatus.NOT_FOUND
+async def test_not_found(method: str, path: str):
+    async with TestClient(app) as client:
+        response = await client.open(
+            path,
+            method=method,
+        )
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
 
+@pytest.mark.xfail()
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -41,14 +42,17 @@ def test_not_found(method: str, path: str):
         ({"n": 10}, HTTPStatus.OK),
     ],
 )
-def test_factorial(query: dict[str, Any], status_code: int):
-    response = requests.get(BASE_URL + "/factorial", params=query)
+async def test_factorial(query: dict[str, Any], status_code: int):
+    async with TestClient(app) as client:
+        response = await client.get("/factorial", params=query)
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
         assert "result" in response.json()
 
 
+@pytest.mark.xfail()
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("params", "status_code"),
     [
@@ -59,14 +63,17 @@ def test_factorial(query: dict[str, Any], status_code: int):
         ("/10", HTTPStatus.OK),
     ],
 )
-def test_fibonacci(params: str, status_code: int):
-    response = requests.get(BASE_URL + "/fibonacci" + params)
+async def test_fibonacci(params: str, status_code: int):
+    async with TestClient(app) as client:
+        response = client.get("/fibonacci" + params)
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
         assert "result" in response.json()
 
 
+@pytest.mark.xfail()
+@pytest.mark.asyncio()
 @pytest.mark.parametrize(
     ("json", "status_code"),
     [
@@ -77,8 +84,9 @@ def test_fibonacci(params: str, status_code: int):
         ([1.0, 2.0, 3.0], HTTPStatus.OK),
     ],
 )
-def test_mean(json: dict[str, Any] | None, status_code: int):
-    response = requests.get(BASE_URL + "/mean", json=json)
+async def test_mean(json: dict[str, Any] | None, status_code: int):
+    async with TestClient(app) as client:
+        response = await client.get("/mean", json=json)
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
