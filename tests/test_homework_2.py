@@ -12,7 +12,7 @@ client = TestClient(app)
 faker = Faker()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def existing_empty_cart_id() -> int:
     return client.post("/cart").json()["id"]
 
@@ -27,7 +27,7 @@ def existing_items() -> list[int]:
         for i in range(10)
     ]
 
-    return [client.post("/item").json()["id"] for item in items]
+    return [client.post("/item", json=item).json()["id"] for item in items]
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -106,7 +106,7 @@ def test_get_cart(request, cart: int, not_empty: bool) -> None:
     if not_empty:
         price = 0
 
-        for item in response_json["item"]:
+        for item in response_json["items"]:
             item_id = item["id"]
             price += client.get(f"/item/{item_id}").json()["price"] * item["quantity"]
 
@@ -145,12 +145,12 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
         assert isinstance(data, list)
 
         if "min_price" in query:
-            assert all(item["price"] <= query["min_price"] for item in data)
+            assert all(item["price"] >= query["min_price"] for item in data)
 
         if "max_price" in query:
-            assert all(item["price"] >= query["max_price"] for item in data)
+            assert all(item["price"] <= query["max_price"] for item in data)
 
-        quantity = sum(item["quantity"] for item in data)
+        quantity = sum(item['quantity'] for cart in data for item in cart['items'])
 
         if "min_quantity" in query:
             assert quantity >= query["min_quantity"]
