@@ -42,7 +42,11 @@ async def test_not_found(method: str, path: str):
 )
 async def test_factorial(query: dict[str, Any], status_code: int):
     async with TestClient(app) as client:
-        response = await client.get("/factorial", params=query)
+        # Форматируем строку запроса с параметрами
+        query_string = "&".join(f"{key}={value}" for key, value in query.items())
+        url = f"/factorial?{query_string}" if query_string else "/factorial"
+        
+        response = await client.get(url)
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
@@ -62,14 +66,15 @@ async def test_factorial(query: dict[str, Any], status_code: int):
 )
 async def test_fibonacci(params: str, status_code: int):
     async with TestClient(app) as client:
-        response = client.get("/fibonacci" + params)
+        # Добавлено await для вызова
+        response = await client.get("/fibonacci" + params)
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
         assert "result" in response.json()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("json", "status_code"),
     [
@@ -80,7 +85,7 @@ async def test_fibonacci(params: str, status_code: int):
         ([1.0, 2.0, 3.0], HTTPStatus.OK),
     ],
 )
-async def test_mean(json: dict[str, Any] | None, status_code: int):
+async def test_mean(json: Any, status_code: int):
     async with TestClient(app) as client:
         response = await client.get("/mean", json=json)
 

@@ -92,9 +92,11 @@ async def mean(scope, receive, send):
     except json.JSONDecodeError:
         await send_answer(send, 400, content_type="text/plain", body=b"400 Bad Request")
         return
-
-    if not isinstance(data, list) or not data:
+    if isinstance(data, list) and not len(data):
         await send_answer(send, 400, content_type="text/plain", body=b"400 Bad Request")
+        return
+    if not data:
+        await send_answer(send, 422, content_type="text/plain", body=b"422 Unprocessable Entity")
         return
 
     try:
