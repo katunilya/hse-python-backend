@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace  # проверка наличия пробелов в конце строки
+      - id: end-of-file-fixer  # проверка наличия пустых строк в конце файла
+      - id: check-yaml  # проверка наличия ошибок в формате yaml
+      - id: check-added-large-files  # проверка наличия файлов больше максимального размера
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit  # ruff проверка кода
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        types_or: [python, pyi, jupyter]
+        args: [--fix]
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
