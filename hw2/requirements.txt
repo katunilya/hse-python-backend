@@ -1,0 +1,10 @@
+faker
+fastapi
+httpx
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+alembic
+pydantic
+websockets
+pytest-asyncio

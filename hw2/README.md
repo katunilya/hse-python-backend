@@ -1,12 +1,11 @@
+
+
+
 # ДЗ
 
 
 ```shell
-poetry run pytest -vv --showlocals --strict ./tests/test_homework_2.py --runxfail
-```
-
-```shell
-poetry run pytest -vv --showlocals --strict ./tests/test_homework_2.py
+uvicorn hw2.shop_api.main:app --reload
 ```
 ## Задание - REST API (3 балла)
 
@@ -102,7 +101,7 @@ poetry run pytest -vv --showlocals --strict ./tests/test_homework_2.py
 Чтобы запустить тесты только для этого задания вызовите:
 
 ```sh
-poetry run pytest -vv --showlocals --strict ./tests/test_homework_2.py
+poetry run pytest -vv --showlocals --strict ./tests/test_homework_2_1.py
 ```
 
 ## Доп. Задание - WebSocket (+1 доп балл)
