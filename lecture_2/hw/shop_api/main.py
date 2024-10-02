@@ -47,6 +47,7 @@ carts_db: Dict[int, Cart] = {}
 item_id_counter = 0
 cart_id_counter = 0
 
+
 # Создание новой корзины
 @app.post("/cart", status_code=status.HTTP_201_CREATED)
 def create_cart(response: Response):
