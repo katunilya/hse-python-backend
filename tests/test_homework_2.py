@@ -18,7 +18,7 @@ def existing_empty_cart_id() -> int:
     return client.post("/cart").json()["id"]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def existing_items() -> list[int]:
     items = [
         {
@@ -31,7 +31,7 @@ def existing_items() -> list[int]:
     return [client.post("/item", json=item).json()["id"] for item in items]
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(autouse=True)
 def existing_not_empty_carts(existing_items: list[int]) -> list[int]:
     carts = []
 
@@ -79,7 +79,6 @@ def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
 @pytest.mark.xfail()
 def test_post_cart() -> None:
     response = client.post("/cart")
-
     assert response.status_code == HTTPStatus.CREATED
     assert "location" in response.headers
     assert "id" in response.json()
