@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, status, Query, Body, Response
-from pydantic import BaseModel, Field
-from typing import List, Dict, Optional, Any
-
+from fastapi import FastAPI, HTTPException, status, Query, Body, Response, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
+from typing import List, Dict, Optional
+import uuid
 app = FastAPI()
 
 # Модели данных
@@ -9,15 +9,17 @@ class ItemCreate(BaseModel):
     name: str
     price: float
 
-    class Config:
-        extra = "forbid"
+    model_config = {
+        "extra": "forbid"
+    }
 
 class ItemUpdate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
 
-    class Config:
-        extra = "forbid"
+    model_config = {
+        "extra": "forbid"
+    }
 
 class Item(BaseModel):
     id: int
@@ -144,14 +146,14 @@ def create_item(item: ItemCreate, response: Response):
     new_item = Item(id=item_id, name=item.name, price=item.price, deleted=False)
     items_db[item_id] = new_item
     response.headers["location"] = f"/item/{item_id}"
-    return new_item
+    return new_item.model_dump()
 
 # Получение товара по идентификатору
 @app.get("/item/{id}")
 def get_item(id: int):
     if id not in items_db or items_db[id].deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Товар не найден")
-    return items_db[id]
+    return items_db[id].model_dump()
 
 # Получение списка товаров с фильтрами
 @app.get("/item")
@@ -174,7 +176,7 @@ def list_items(
         filtered_items.append(item)
     start = offset
     end = offset + limit
-    return filtered_items[start:end]
+    return [item.model_dump() for item in filtered_items[start:end]]
 
 # Замена товара по идентификатору
 @app.put("/item/{id}")
@@ -196,7 +198,7 @@ def update_item(id: int, item_updates: ItemUpdate = Body(default={})):
     item = items_db[id]
     if item.deleted:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-    update_data = item_updates.dict(exclude_unset=True)
+    update_data = item_updates.model_dump(exclude_unset=True)
     if "deleted" in update_data:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Поле 'deleted' нельзя менять")
     if not update_data:
@@ -215,3 +217,45 @@ def delete_item(id: int):
         return {"message": "Товар уже удален"}
     item.deleted = True
     return {"message": "Товар удален"}
+
+
+#Реализация чата на сокетах
+
+class Manager:
+    def __init__(self):
+        self.rooms: Dict[str, List[WebSocket]] = {}
+        self.users: Dict[WebSocket, str] = {}
+
+    async def connect(self, ws: WebSocket, room: str):
+        await ws.accept()
+        nick = str(uuid.uuid4())[:8]  # Генерим ник из uuid
+        self.users[ws] = nick
+        if room not in self.rooms:
+            self.rooms[room] = []
+        self.rooms[room].append(ws)
+
+    def disconnect(self, ws: WebSocket, room: str):
+        self.rooms[room].remove(ws)
+        del self.users[ws]
+        if not self.rooms[room]:
+            del self.rooms[room]  # Если комната пустая, удаляем
+
+    async def send(self, msg: str, room: str, sender: WebSocket):
+        # Шлем всем в комнате
+        for ws in self.rooms.get(room, []):
+            if ws != sender:
+                await ws.send_text(msg)
+
+manager = Manager()
+
+@app.websocket("/chat/{room}")
+async def chat(ws: WebSocket, room: str):
+    await manager.connect(ws, room)
+    nick = manager.users[ws]
+    try:
+        while True:
+            text = await ws.receive_text()
+            msg = f"{nick} :: {text}"
+            await manager.send(msg, room, ws)
+    except WebSocketDisconnect:
+        manager.disconnect(ws, room)  # Если отключился - удаляем из комнаты

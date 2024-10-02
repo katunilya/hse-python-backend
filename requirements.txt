@@ -1,0 +1,5 @@
+pytest~=8.3.3
+pydantic~=2.9.2
+websocket-client~=1.8.0
+protobuf~=5.28.2
+grpcio~=1.66.1
