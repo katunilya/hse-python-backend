@@ -7,4 +7,8 @@ class ItemInfo:
     name: str
     price: float
     deleted: bool
-    
+
+
+@dataclass(slots=True)
+class PatchItemInfo:
+    deleted: bool
