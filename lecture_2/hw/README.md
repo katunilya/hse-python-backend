@@ -1,5 +1,6 @@
 # ДЗ
 
+# Запуск
 
 ```shell
 poetry run pytest -vv --showlocals --strict ./tests/test_homework_2.py --runxfail
