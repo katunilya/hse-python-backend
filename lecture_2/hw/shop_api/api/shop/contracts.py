@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pydantic import BaseModel, ConfigDict
 
-from lecture_2.hw.shop_api.item_store.models import ItemInfo, PatchItemInfo
+from lecture_2.hw.shop_api.item_store.models import ItemInfo, PatchItemInfo, ItemEntity
 
 
 class ItemResponse(BaseModel):
@@ -11,28 +11,28 @@ class ItemResponse(BaseModel):
     deleted: bool
 
     @staticmethod
-    def from_info(info: ItemInfo) -> ItemResponse:
+    def from_entity(entity: ItemEntity) -> ItemResponse:
         return ItemResponse(
-            id=info.id_, name=info.name, price=info.price, deleted=info.deleted
+            id=entity.id_,
+            name=entity.info.name,
+            price=entity.info.price,
+            deleted=entity.deleted,
         )
 
 
 class ItemRequest(BaseModel):
-    id: int
     name: str
     price: float
-    deleted: bool
 
     def as_item_info(self) -> ItemInfo:
-        return ItemInfo(
-            id_=self.id, name=self.name, price=self.price, deleted=self.deleted
-        )
+        return ItemInfo(name=self.name, price=self.price)
 
 
 class PatchItemRequest(BaseModel):
-    deleted: bool
+    name: str | None = None
+    price: float | None = None
 
     model_config = ConfigDict(extra="forbid")
 
     def as_patch_item_info(self) -> PatchItemInfo:
-        return PatchItemInfo(deleted=self.deleted)
+        return PatchItemInfo(name=self.name, price=self.price)
