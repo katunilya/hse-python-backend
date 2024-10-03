@@ -5,7 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="135a3545-428d-4da1-a22d-25bf8ece4195" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/tests/test_homework_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_homework_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/myapp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/src/factorial.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/factorial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/src/fibonacci.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/fibonacci.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/src/mean.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/mean.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw1/tests/test_homework_1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lecture_1/hw/math_plain_asgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/math_plain_asgi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,23 +30,31 @@
   &quot;associatedIndex&quot;: 3
 }</component>
   <component name="ProjectId" id="2msvCMNU3kyb0fV5f4JTt5iccNS" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;hw2__stepan5024&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/stepanbokarev/Documents/GitHub/itmo-ai-python-backend&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "hw2__stepan5024",
+    "last_opened_file_path": "/Users/stepanbokarev/Documents/GitHub/itmo-ai-python-backend/lecture_1/hw",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/lecture_1/hw" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -54,7 +73,7 @@
       <updated>1727877969427</updated>
       <workItem from="1727877970488" duration="455000" />
       <workItem from="1727878450378" duration="2004000" />
-      <workItem from="1727954364859" duration="1501000" />
+      <workItem from="1727954364859" duration="2322000" />
     </task>
     <servers />
   </component>
