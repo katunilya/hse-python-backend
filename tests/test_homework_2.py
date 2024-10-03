@@ -76,7 +76,7 @@ def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
     return existing_item
 
 
-@pytest.mark.xfail()
+#@pytest.mark.xfail()
 def test_post_cart() -> None:
     response = client.post("/cart")
 
@@ -85,7 +85,7 @@ def test_post_cart() -> None:
     assert "id" in response.json()
 
 
-@pytest.mark.xfail()
+#@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("cart", "not_empty"),
     [
