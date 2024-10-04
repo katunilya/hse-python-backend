@@ -247,9 +247,13 @@ def test_put_item(
     ("item", "body", "status_code"),
     [
         ("deleted_item", {}, HTTPStatus.NOT_MODIFIED),
-        ("deleted_item", {"price": 9.99}, HTTPStatus.NOT_MODIFIED),
-        ("deleted_item", {"name": "new name", "price": 9.99}, HTTPStatus.NOT_MODIFIED),
-        ("existing_item", {}, HTTPStatus.OK),
+        ("deleted_item", {"price": 9.99}, HTTPStatus.NOT_MODIFIED),  #
+        (
+            "deleted_item",
+            {"name": "new name", "price": 9.99},
+            HTTPStatus.NOT_MODIFIED,
+        ),  #
+        ("existing_item", {}, HTTPStatus.OK),  #
         ("existing_item", {"price": 9.99}, HTTPStatus.OK),
         ("existing_item", {"name": "new name", "price": 9.99}, HTTPStatus.OK),
         (

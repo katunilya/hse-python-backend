@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import Optional
 
 
 @dataclass
@@ -17,8 +17,8 @@ class Item:
 
 @dataclass
 class PatchItemInfo:
-    name: str
-    price: float
+    name: Optional[str] = None
+    price: Optional[float] = None
 
 
 @dataclass
@@ -31,5 +31,5 @@ class CartItem:
 @dataclass
 class Cart:
     id: int
-    items: list = field(default_factory=lambda: [])
+    items: list[CartItem] = field(default_factory=lambda: [])
     price: float = 0.0

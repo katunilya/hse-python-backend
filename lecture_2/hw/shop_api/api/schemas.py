@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import List
-from pydantic import BaseModel, PositiveFloat
+from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, PositiveFloat, NonNegativeFloat
 
 from lecture_2.hw.shop_api.shop.models import (
     CartItem,
@@ -15,7 +15,7 @@ from lecture_2.hw.shop_api.shop.models import (
 class CartResponse(BaseModel):
     id: int
     items: List[CartItem]
-    price: PositiveFloat
+    price: NonNegativeFloat
 
     @staticmethod
     def from_entity(entity: Cart) -> CartResponse:
@@ -45,7 +45,7 @@ class ItemResponse(BaseModel):
 class ItemRequest(BaseModel):
     name: str
     price: PositiveFloat
-    deleted: bool
+    deleted: bool = False
 
     def as_item_info(self) -> ItemInfo:
         return ItemInfo(
@@ -56,8 +56,9 @@ class ItemRequest(BaseModel):
 
 
 class PatchItemRequest(BaseModel):
-    name: str
-    price: PositiveFloat
+    model_config = ConfigDict(extra="forbid")
+    name: Optional[str] = None
+    price: Optional[PositiveFloat] = None
 
     def as_patch_item_info(self) -> PatchItemInfo:
         return PatchItemInfo(name=self.name, price=self.price)

@@ -1,7 +1,6 @@
 from typing import List, Annotated
 
 from http import HTTPStatus
-import grpc
 
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import PositiveFloat, NonNegativeInt, PositiveInt, NonNegativeFloat
@@ -13,7 +12,6 @@ from lecture_2.hw.shop_api.api.schemas import (
     PatchItemRequest,
 )
 from lecture_2.hw.shop_api import shop
-from ..cart import cart_pb2_grpc, cart_pb2
 
 cart_router = APIRouter(prefix="/cart")
 item_router = APIRouter(prefix="/item")
@@ -27,12 +25,13 @@ item_router = APIRouter(prefix="/item")
 
 
 @cart_router.post(
-    "/cart",
+    "/",
     responses={
-        HTTPStatus.OK: {
-            "description": "Successfully returned requested cart",
+        HTTPStatus.CREATED: {
+            "description": "Successfully created new cart",
         }
     },
+    status_code=HTTPStatus.CREATED,
 )
 def create_cart(response: Response):
     # try:
@@ -45,7 +44,7 @@ def create_cart(response: Response):
     _id, cart = shop.post_cart()
     response.headers["location"] = f"/cart/{_id}"
 
-    return _id, CartResponse.from_entity(cart)
+    return CartResponse.from_entity(cart)
 
 
 @cart_router.get("/")
@@ -53,13 +52,17 @@ def get_carts(
     offset: Annotated[NonNegativeInt, Query()] = 0,
     limit: Annotated[PositiveInt, Query()] = 10,
     min_price: Annotated[NonNegativeFloat, Query()] = 0,
-    max_price: Annotated[PositiveFloat, Query()] = float("inf"),
+    max_price: Annotated[PositiveFloat, Query()] = None,
+    min_quantity: Annotated[NonNegativeInt, Query()] = 0,
+    max_quantity: Annotated[PositiveInt, Query()] = None,
 ) -> List[CartResponse]:
     cart_list = shop.get_carts(
         offset=offset,
         limit=limit,
         min_price=min_price,
         max_price=max_price,
+        min_quantity=min_quantity,
+        max_quantity=max_quantity,
     )
 
     return [CartResponse.from_entity(e) for e in cart_list]
@@ -89,7 +92,7 @@ async def get_cart_by_id(id: int) -> CartResponse:
 
 
 @cart_router.get(
-    "/{cart_id}/item/{item_id}",
+    "/{cart_id}/add/{item_id}",
     responses={
         HTTPStatus.OK: {
             "description": "Successfully added item to cart",
@@ -117,6 +120,25 @@ async def add_item_to_cart(cart_id: int, item_id: int) -> CartResponse:
     return CartResponse.from_entity(cart)
 
 
+@item_router.post(
+    "/",
+    responses={
+        HTTPStatus.CREATED: {
+            "description": "Successfully returned requested item",
+        },
+        HTTPStatus.NOT_FOUND: {
+            "description": "Item doesn't exist",
+        },
+    },
+    status_code=HTTPStatus.CREATED,
+)
+def post_item(info: ItemRequest, response: Response) -> ItemResponse:
+    item = shop.add_item(info=info)
+    response.headers["location"] = f"/item/{item.id}"
+
+    return ItemResponse.from_entity(item)
+
+
 @item_router.get(
     "/{id}",
     responses={
@@ -131,7 +153,7 @@ async def add_item_to_cart(cart_id: int, item_id: int) -> CartResponse:
 def get_item(id: int):
     item = shop.get_item(id)
 
-    if item is None:
+    if item is None or item.info.deleted:
         raise HTTPException(
             HTTPStatus.NOT_FOUND,
             f"Item {id} was not found",
@@ -144,8 +166,8 @@ def get_item(id: int):
 def get_items(
     offset: Annotated[NonNegativeInt, Query()] = 0,
     limit: Annotated[PositiveInt, Query()] = 10,
-    min_price: Annotated[PositiveFloat, Query()] = 0,
-    max_price: Annotated[PositiveFloat, Query()] = float("inf"),
+    min_price: Annotated[NonNegativeFloat, Query()] = 0,
+    max_price: Annotated[PositiveFloat, Query()] = None,
 ) -> List[ItemResponse]:
     item_list = shop.get_items(
         offset=offset,
@@ -189,15 +211,33 @@ def put_item(id: int, info: ItemRequest) -> ItemResponse:
         HTTPStatus.NOT_FOUND: {
             "description": "Item doesn't exist",
         },
+        HTTPStatus.UNPROCESSABLE_ENTITY: {
+            "description": "Cannot patch field deleted",
+        },
+        HTTPStatus.NOT_MODIFIED: {
+            "description": "Not modified",
+        },
     },
 )
 def patch_item(id: int, info: PatchItemRequest) -> ItemResponse:
-    item = shop.patch_item(id, info.as_patch_item_info())
+    orig_item = shop.get_item(id)
+    o_name, o_price = orig_item.info.name, orig_item.info.price
+    info = info.as_patch_item_info()
 
-    if item is None:
+    if orig_item is None:
+        raise HTTPException(
+            HTTPStatus.NOT_FOUND,
+            f"Item {id} was not found",
+        )
+
+    item = shop.patch_item(id, info)
+
+    if (o_name == item.info.name and o_price == item.info.price) or (
+        info.price is None and info.name is None
+    ):
         raise HTTPException(
             HTTPStatus.NOT_MODIFIED,
-            f"Item {id} was not found",
+            "Item was not modified",
         )
 
     return ItemResponse.from_entity(item)
@@ -219,7 +259,7 @@ def delete_item(id: int) -> ItemResponse:
 
     if item is None:
         raise HTTPException(
-            HTTPStatus.NOT_MODIFIED,
+            HTTPStatus.NOT_FOUND,
             f"Item {id} was not found",
         )
 

@@ -7,7 +7,8 @@ from lecture_2.hw.shop_api.shop.models import (
     ItemInfo,
     PatchItemInfo,
 )
-from ..cart.cart_grpc import _carts
+
+# from ..cart.cart_grpc import _carts
 
 _items = dict[int, ItemInfo]()
 _carts = dict[int, Cart]()
@@ -36,15 +37,28 @@ def get_cart(id: int) -> Cart | None:
 
 
 def get_carts(
-    limit: int, offset: int, min_price: float = 0, max_price: float = float("inf")
+    limit: int,
+    offset: int,
+    min_price: float,
+    max_price: float,
+    min_quantity: int,
+    max_quantity: int,
 ) -> Iterable[Cart]:
     curr = 0
+
+    if max_price is None:
+        max_price = float("inf")
+
+    if max_quantity is None:
+        max_quantity = float("inf")
 
     for _, cart in _carts.items():
         if (
             offset <= curr < offset + limit
             and cart.price >= min_price
             and cart.price <= max_price
+            and sum(item.quantity for item in cart.items) >= min_quantity
+            and sum(item.quantity for item in cart.items) <= max_quantity
         ):
             yield cart
 
@@ -52,17 +66,21 @@ def get_carts(
 
 
 def get_items(
-    limit: int, offset: int, min_price: float = 0, max_price: float = float("inf")
+    limit: int, offset: int, min_price: float, max_price: float
 ) -> Iterable[Item]:
     curr = 0
 
-    for _, item in _items.items():
+    if max_price is None:
+        max_price = float("inf")
+
+    for id, item in _items.items():
         if (
             offset <= curr < offset + limit
             and item.price >= min_price
             and item.price <= max_price
+            and not item.deleted
         ):
-            yield item
+            yield Item(id, item)
 
         curr += 1
 
@@ -71,7 +89,7 @@ def add_item_to_cart(cart_id: int, item_id: int) -> Tuple[Cart, ItemInfo]:
     cart = _carts.get(cart_id, None)
     item_info = _items.get(item_id, None)
 
-    if cart is None or item_info is None:
+    if cart is None or item_info is None or item_info.deleted:
         return cart, item_info
 
     item = Item(id=item_id, info=item_info)
@@ -86,6 +104,7 @@ def add_item_to_cart(cart_id: int, item_id: int) -> Tuple[Cart, ItemInfo]:
             return cart, item_info
 
     cart.items.append(CartItem(item, quantity=1))
+    cart.price += item.info.price
 
     return cart, item_info
 
@@ -94,7 +113,7 @@ def get_item(id: int) -> Item:
     info = _items.get(id, None)
 
     if info is None:
-        return info
+        return None
 
     return Item(id=id, info=info)
 
@@ -120,8 +139,12 @@ def patch_item(id: int, info: PatchItemInfo) -> Item:
         return None
 
     item_info = _items.get(id)
-    item_info.name = info.name
-    item_info.price = info.price
+
+    if info.name is not None:
+        item_info.name = info.name
+
+    if info.price is not None:
+        item_info.price = info.price
 
     _items[id] = item_info
 
