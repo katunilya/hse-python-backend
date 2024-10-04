@@ -3,7 +3,7 @@ from typing import List, Annotated
 from http import HTTPStatus
 import grpc
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import PositiveFloat, NonNegativeInt, PositiveInt, NonNegativeFloat
 
 from lecture_2.hw.shop_api.api.schemas import (
@@ -19,23 +19,33 @@ cart_router = APIRouter(prefix="/cart")
 item_router = APIRouter(prefix="/item")
 
 
-def create_cart_via_grpc():
-    with grpc.insecure_channel("localhost:50051") as channel:
-        stub = cart_pb2_grpc.CartServiceStub(channel)
-        response = stub.CreateCart(cart_pb2.CreateCartRequest())
-        return response.cart_id
+# def create_cart_via_grpc():
+#     with grpc.insecure_channel("localhost:50051") as channel:
+#         stub = cart_pb2_grpc.CartServiceStub(channel)
+#         response = stub.CreateCart(cart_pb2.CreateCartRequest())
+#         return response.cart_id
 
 
-@cart_router.post("/cart", response_model=int)
-def create_cart():
-    """
-    Создание корзины через gRPC
-    """
-    try:
-        new_cart_id = create_cart_via_grpc()
-        return new_cart_id
-    except grpc.RpcError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@cart_router.post(
+    "/cart",
+    responses={
+        HTTPStatus.OK: {
+            "description": "Successfully returned requested cart",
+        }
+    },
+)
+def create_cart(response: Response):
+    # try:
+    #     new_cart_id = create_cart_via_grpc()
+    #     return new_cart_id
+
+    # except grpc.RpcError as e:
+    #     raise HTTPException(status_code=500, detail=str(e)) from e
+
+    _id, cart = shop.post_cart()
+    response.headers["location"] = f"/cart/{_id}"
+
+    return _id, CartResponse.from_entity(cart)
 
 
 @cart_router.get("/")

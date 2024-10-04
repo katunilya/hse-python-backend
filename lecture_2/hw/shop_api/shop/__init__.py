@@ -1,4 +1,5 @@
 from .queries import (
+    post_cart,
     get_cart,
     get_carts,
     add_item_to_cart,
@@ -11,6 +12,7 @@ from .queries import (
 )
 
 __all__ = [
+    "post_cart",
     "get_cart",
     "get_carts",
     "add_item_to_cart",

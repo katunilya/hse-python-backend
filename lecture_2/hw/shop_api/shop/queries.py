@@ -10,6 +10,7 @@ from lecture_2.hw.shop_api.shop.models import (
 from ..cart.cart_grpc import _carts
 
 _items = dict[int, ItemInfo]()
+_carts = dict[int, Cart]()
 
 
 def int_id_gen() -> Iterable[int]:
@@ -21,6 +22,13 @@ def int_id_gen() -> Iterable[int]:
 
 
 _id_gen = int_id_gen()
+
+
+def post_cart() -> Cart:
+    _id = next(_id_gen)
+    _carts[_id] = Cart(id=_id)
+
+    return _id, _carts[_id]
 
 
 def get_cart(id: int) -> Cart | None:
