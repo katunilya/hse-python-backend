@@ -12,7 +12,6 @@ from lecture_2.hw.shop_api.api.shop.item.contracts import (
 from lecture_2.hw.shop_api.store import item_store
 
 
-# cart_router = APIRouter(prefix="/cart")
 item_router = APIRouter(prefix="/item")
 
 

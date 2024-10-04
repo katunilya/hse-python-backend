@@ -1,7 +1,7 @@
 from typing import Iterable
 
 from .models import ItemEntity, ItemInfo, PatchItemInfo
-
+from .. import cart_store
 _data = dict[int, ItemEntity]()
 
 
@@ -79,5 +79,7 @@ def patch(id_: int, patch_info: PatchItemInfo) -> ItemEntity | None:
         _data[id_].info.name = patch_info.name
     if patch_info.price is not None:
         _data[id_].info.price = patch_info.price
+
+    cart_store.update_item_info(id_, _data[id_].info, patch_info)
 
     return _data[id_]
