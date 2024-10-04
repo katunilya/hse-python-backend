@@ -26,5 +26,5 @@ jobs:
           pip install -r requirements.txt
       - name: Run tests
         run: |
-          cd python-backend  # Переход в директорию python-backend
+          cd tests # Переход в директорию python-backend
           pytest -vv --strict --showlocals tests/test_homework_2.py  # Запуск тестов
