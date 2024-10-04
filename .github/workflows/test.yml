@@ -27,4 +27,4 @@ jobs:
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/python-backend" >> $GITHUB_ENV
       - name: Run tests
-        run: pytest -vv --strict --showlocals python-backend/tests/test_homework_2.py
+        run: pytest -vv --strict --showlocals test_homework_2.py
