@@ -1,16 +1,16 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models.cart import Cart as CartModel
+from models.cart import Cart as CartModel
 from app.models.cart_item import CartItem as CartItemModel
 
 class CartService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def get_cart(self, id: int):
+    def get_cart(self, id: int) -> CartModel:
         pass
-
+    
     def get_carts(
         self,
         offset: int = 0,
