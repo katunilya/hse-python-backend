@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r python-backend/requirements.txt  # Укажите полный путь к requirements.txt
       - name: Run tests
         run: |
-          cd tests # Переход в директорию python-backend
-          pytest -vv --strict --showlocals tests/test_homework_2.py  # Запуск тестов
+          cd python-backend/tests  # Переход в директорию tests
+          pytest -vv --strict --showlocals test_homework_2.py  # Запуск тестов
