@@ -15,9 +15,11 @@ from http import HTTPStatus
 import random
 import string
 import uvicorn
-
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)
 
 
 # Модели данных
