@@ -24,6 +24,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
       - name: Run tests
-        run: pytest -vv --strict --showlocals test_homework_2.py
+        run: |
+          cd python-backend  # Переход в директорию python-backend
+          pytest -vv --strict --showlocals tests/test_homework_2.py  # Запуск тестов
