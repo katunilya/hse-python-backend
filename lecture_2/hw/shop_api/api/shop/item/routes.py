@@ -4,12 +4,12 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import NonNegativeInt, PositiveInt, PositiveFloat
 
-from lecture_2.hw.shop_api.api.shop.contracts import (
+from lecture_2.hw.shop_api.api.shop.item.contracts import (
     ItemRequest,
     ItemResponse,
     PatchItemRequest,
 )
-from lecture_2.hw.shop_api import item_store
+from lecture_2.hw.shop_api.store import item_store
 
 
 # cart_router = APIRouter(prefix="/cart")

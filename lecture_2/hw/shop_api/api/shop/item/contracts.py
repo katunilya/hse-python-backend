@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pydantic import BaseModel, ConfigDict
 
-from lecture_2.hw.shop_api.item_store.models import ItemInfo, PatchItemInfo, ItemEntity
+from lecture_2.hw.shop_api.store.item_store.models import ItemInfo, PatchItemInfo, ItemEntity
 
 
 class ItemResponse(BaseModel):

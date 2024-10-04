@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from lecture_2.hw.shop_api.api.shop.routes import item_router
+from lecture_2.hw.shop_api.api.shop.item.routes import item_router
 
 app = FastAPI(title="Shop API")
 
