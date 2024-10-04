@@ -163,7 +163,6 @@ def get_cart_price(cart_id: int) -> float:
     sum = 0.0
     for item_id, quantity in _data_cart[cart_id].items.items():
         sum += _data_item[item_id].price * quantity
-
     return sum
 
 
