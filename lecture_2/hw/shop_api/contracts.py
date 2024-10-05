@@ -68,7 +68,6 @@ class CartResponse(BaseModel):
 
     @staticmethod
     def from_entity(entity: CarEntity):
-        # TODO подумать мб можно хрнаить id -> ItemInfo
         price = 0
 
         def ItemResp_from_key(item_id: int, amount: int) -> ItemResponseInCart:

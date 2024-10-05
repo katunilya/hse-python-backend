@@ -202,11 +202,5 @@ async def patch_item(id: int, info: PatchItemRequest) -> ItemResponse:
 
 @router.delete("/item/{id}")
 async def delete_item(id: int) -> Response:
-    # entity = store.get_one("item", id)
-    # if entity is None:
-    #     raise HTTPException(
-    #         HTTPStatus.NOT_FOUND,
-    #         f"Request item with id: {id} was not found",
-    #     )
     store.delete(id)
     return Response("")
