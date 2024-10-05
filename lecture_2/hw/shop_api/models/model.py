@@ -1,7 +1,7 @@
 # models.py
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from database import Base
+from shop_api.database.database import Base
 
 class Item(Base):
     __tablename__ = 'items'
@@ -24,4 +24,5 @@ class Cart(Base):
     __tablename__ = 'carts'
 
     id = Column(Integer, primary_key=True, index=True)
+    price = Column(Float)
     items = relationship('CartItem', backref='cart', cascade='all, delete-orphan')

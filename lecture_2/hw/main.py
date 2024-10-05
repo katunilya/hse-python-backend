@@ -1,29 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from .database import engine, SessionLocal
-from models import Base, Item, Cart
-from schemas import ItemCreate, CartCreate, CartItem
-from typing import List
+# main.py
 
-Base.metadata.create_all(bind=engine)
+from fastapi import FastAPI
+from shop_api.database.database import Base, engine
+from shop_api.routes import routes
 
 app = FastAPI()
 
-app = FastAPI(title="Shop API")
+# Создание таблиц
+Base.metadata.create_all(bind=engine)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@app.post("/item", response_model=schemas.ItemOut)
-def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
-    return 'asdafsdf'
-
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+# Подключение маршрутов
+app.include_router(routes.router)

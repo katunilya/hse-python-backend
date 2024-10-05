@@ -1,7 +1,25 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
-class CartItem(BaseModel):
+class ItemBase(BaseModel):
+    name: str
+    price: float
+
+class ItemCreate(ItemBase):
+    pass
+
+class ItemUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+
+class ItemResponse(ItemBase):
+    id: int
+    deleted: bool
+
+    class Config:
+        orm_mode = True
+
+class CartItemResponse(BaseModel):
     id: int
     name: str
     quantity: int
@@ -9,21 +27,11 @@ class CartItem(BaseModel):
 
     class Config:
         orm_mode = True
-        
 
-class Cart(BaseModel):
+class CartResponse(BaseModel):
     id: int
-    items: List[CartItem]
+    items: List[CartItemResponse]
     price: float
 
-    class Config:
-        orm_mode = True
-
-class Item(BaseModel):
-    id: int
-    name: str
-    price: float
-    deleted: bool = False
-    
     class Config:
         orm_mode = True
