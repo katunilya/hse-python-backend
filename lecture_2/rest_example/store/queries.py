@@ -18,6 +18,11 @@ def int_id_generator() -> Iterable[int]:
 
 _id_generator = int_id_generator()
 
+_cart_id_generator = int_id_generator()
+_item_id_generator = int_id_generator()
+items = []
+carts = []
+
 
 def add(info: PokemonInfo) -> PokemonEntity:
     _id = next(_id_generator)

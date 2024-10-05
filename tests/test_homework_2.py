@@ -13,11 +13,13 @@ client = TestClient(app)
 faker = Faker()
 
 
+# создает пустую корзину и возвращает её ID
 @pytest.fixture()
 def existing_empty_cart_id() -> int:
     return client.post("/cart").json()["id"]
 
 
+# создает 10 товаров с фейковыми данными и возвращает список их ID
 @pytest.fixture(scope="session")
 def existing_items() -> list[int]:
     items = [
@@ -31,6 +33,7 @@ def existing_items() -> list[int]:
     return [client.post("/item", json=item).json()["id"] for item in items]
 
 
+# создает 20 корзин, каждая с разным количеством товаров, и возвращает список ID этих корзин
 @pytest.fixture(scope="session", autouse=True)
 def existing_not_empty_carts(existing_items: list[int]) -> list[int]:
     carts = []
@@ -45,6 +48,8 @@ def existing_not_empty_carts(existing_items: list[int]) -> list[int]:
     return carts
 
 
+# добавляет несколько товаров, созданных с помощью existing_items() в пустую корзину, созданную с помощью
+# existing_empty_cart_id(), возвращая её ID.
 @pytest.fixture()
 def existing_not_empty_cart_id(
     existing_empty_cart_id: int,
@@ -56,6 +61,7 @@ def existing_not_empty_cart_id(
     return existing_empty_cart_id
 
 
+# создает и возвращает один товар с фейковыми данными
 @pytest.fixture()
 def existing_item() -> dict[str, Any]:
     return client.post(
@@ -67,6 +73,7 @@ def existing_item() -> dict[str, Any]:
     ).json()
 
 
+# создает товар и сразу удаляет его, возвращая его данные
 @pytest.fixture()
 def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
     item_id = existing_item["id"]
@@ -76,6 +83,11 @@ def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
     return existing_item
 
 
+# Цель: Проверка создания новой корзины.
+# Ожидания:
+# Статус ответа должен быть 201 CREATED.
+# Заголовок ответа должен содержать location (указание на URL новой корзины).
+# В теле ответа должно быть поле id с идентификатором новой корзины.
 @pytest.mark.xfail()
 def test_post_cart() -> None:
     response = client.post("/cart")
@@ -85,6 +97,11 @@ def test_post_cart() -> None:
     assert "id" in response.json()
 
 
+# Цель: Проверка получения информации о корзине.
+# Ожидания:
+# Корзина может быть пустой или содержать товары (параметризовано).
+# Если корзина не пуста, итоговая цена корзины должна быть рассчитана как сумма цен товаров, умноженных на их количество.
+# Для пустой корзины цена должна быть 0.0.
 @pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("cart", "not_empty"),
@@ -116,6 +133,11 @@ def test_get_cart(request, cart: int, not_empty: bool) -> None:
         assert response_json["price"] == 0.0
 
 
+# Цель: Проверка фильтрации списка корзин.
+# Ожидания:
+# Поддержка фильтрации по следующим параметрам: offset, limit, min_price, max_price, min_quantity, max_quantity.
+# Некорректные значения (например, отрицательные) должны возвращать статус 422 Unprocessable Entity.
+# При корректных значениях фильтров ожидается успешный ответ 200 OK и проверка содержимого списка корзин.
 @pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("query", "status_code"),
@@ -160,6 +182,11 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
             assert quantity <= query["max_quantity"]
 
 
+# Цель: Проверка создания товара.
+# Ожидания:
+# Статус ответа должен быть 201 CREATED.
+# В ответе должно возвращаться имя и цена созданного товара, которые должны совпадать с теми, что были отправлены в
+# запросе.
 @pytest.mark.xfail()
 def test_post_item() -> None:
     item = {"name": "test item", "price": 9.99}
@@ -172,6 +199,10 @@ def test_post_item() -> None:
     assert item["name"] == data["name"]
 
 
+# Цель: Проверка получения товара по его ID.
+# Ожидания:
+# Статус ответа должен быть 200 OK.
+# Тело ответа должно содержать данные о товаре, и они должны совпадать с теми, которые были использованы при его создании.
 @pytest.mark.xfail()
 def test_get_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
@@ -182,6 +213,11 @@ def test_get_item(existing_item: dict[str, Any]) -> None:
     assert response.json() == existing_item
 
 
+# Цель: Проверка фильтрации списка товаров.
+# Ожидания:
+# Фильтрация по параметрам: offset, limit, min_price, max_price, show_deleted.
+# Некорректные значения фильтров (например, отрицательные цены) должны возвращать 422 Unprocessable Entity.
+# При корректных запросах ожидается успешный ответ с проверкой данных.
 @pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("query", "status_code"),
@@ -217,6 +253,10 @@ def test_get_item_list(query: dict[str, Any], status_code: int) -> None:
             assert all(item["deleted"] is False for item in data)
 
 
+# Цель: Полное обновление данных товара.
+# Ожидания:
+# Если данные некорректны (например, не указано имя), статус должен быть 422 Unprocessable Entity.
+# Если данные корректны, ответ должен быть 200 OK с обновленными данными товара.
 @pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("body", "status_code"),
@@ -242,6 +282,11 @@ def test_put_item(
         assert response.json() == new_item
 
 
+# Цель: Частичное обновление данных товара.
+# Ожидания:
+# Если пытаются изменить удалённый товар, должен вернуться статус 304 Not Modified.
+# Для существующего товара проверяется возможность изменения отдельных полей.
+# Некорректные изменения (например, добавление поля odd или попытка установить флаг deleted) должны возвращать статус 422 Unprocessable Entity.
 @pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("item", "body", "status_code"),
@@ -280,6 +325,11 @@ def test_patch_item(request, item: str, body: dict[str, Any], status_code: int) 
         assert patched_item == patch_response_body
 
 
+# Цель: Проверка удаления товара.
+# Ожидания:
+# После удаления товара по его ID ответ должен быть 200 OK.
+# При повторной попытке получить удалённый товар ожидается статус 404 Not Found.
+# Повторное удаление должно возвращать 200 OK без ошибок.
 @pytest.mark.xfail()
 def test_delete_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
