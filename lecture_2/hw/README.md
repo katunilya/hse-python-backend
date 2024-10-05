@@ -1,6 +1,6 @@
 # ДЗ
 
-run CI
+run CI 2
 
 ## Задание - REST API (3 балла)
 
