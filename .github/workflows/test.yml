@@ -26,4 +26,4 @@ jobs:
           pip install -r python-backend/requirements.txt  # Используйте полный путь к requirements.txt
       - name: Run tests
         run: |
-          pytest -vv --strict --showlocals python-backend/tests/test_homework_2.py  # Полный путь к файлу с тестами
+          pytest -vv --strict --showlocals tests/test_homework_2.py  # Полный путь к файлу с тестами
