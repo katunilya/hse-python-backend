@@ -1,14 +1,13 @@
 from typing import Iterable, Callable
 
-from lecture_2.hw.shop_api.store.models import (
+from .models import (
     ItemInfo,
     PatchItemInfo,
-    CartInfo
-)
-from lecture_2.hw.shop_api.contracts import (
+    CartInfo,
     ItemEntity,
     CarEntity
 )
+
 
 _items = dict[int, ItemInfo]()
 _carts = dict[int, CartInfo]()

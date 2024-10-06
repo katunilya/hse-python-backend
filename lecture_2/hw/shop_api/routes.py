@@ -3,8 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import NonNegativeInt, PositiveInt, NonNegativeFloat
-from lecture_2.hw.shop_api import store
-from lecture_2.hw.shop_api.contracts import (
+from . import store
+from .contracts import (
     ItemRequest,
     PatchItemRequest,
     ItemResponse,

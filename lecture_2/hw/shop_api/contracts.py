@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from collections import defaultdict
 
-from lecture_2.hw.shop_api.store.models import (
+from .store.models import (
     ItemEntity,
     ItemInfo,
     PatchItemInfo,
@@ -9,7 +9,7 @@ from lecture_2.hw.shop_api.store.models import (
     CartInfo
 )
 
-from lecture_2.hw.shop_api import store
+from . import store
 
 
 # from lecture_2.hw.shop_api.store import get_one
