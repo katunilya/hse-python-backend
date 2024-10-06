@@ -105,7 +105,15 @@ async def app(
         receive: Callable[[], Awaitable[dict[str, Any]]],
         send: Callable[[dict[str, Any]], Awaitable[None]]
 ) -> None:
-    if scope['type'] == 'http':
+    if scope['type'] == 'lifespan':
+        while True:
+            message = await receive()
+            if message['type'] == 'lifespan.startup':
+                await send({'type': 'lifespan.startup.complete'})
+            elif message['type'] == 'lifespan.shutdown':
+                await send({'type': 'lifespan.shutdown.complete'})
+                return
+    elif scope['type'] == 'http':
         path = scope['path']
         method = scope.get("method", "GET")
         if method == 'GET':
