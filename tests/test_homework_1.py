@@ -1,4 +1,3 @@
-import urllib
 from http import HTTPStatus
 from typing import Any
 from urllib.parse import urlencode
