@@ -20,7 +20,11 @@ router = APIRouter(prefix="/cart")
         "/",
         status_code=HTTPStatus.CREATED,
 )
-async def create_cart(info: CartRequest, response: Response) -> CartResponse:
+async def create_cart(response: Response, info: CartRequest = None) -> CartResponse:
+    # Если info не передан, создаем пустую корзину
+    if info is None:
+        info = CartRequest(items=[], price=0.0)
+
     entity = add(info.as_cart_info())
     entity = update_cart_price(entity)
     response.headers["location"] = f"/cart/{entity.id}"
@@ -51,11 +55,11 @@ async def get_one(id: int) -> CartResponse:
 @router.get("/")
 async def get_cart_list(
     offset: Annotated[NonNegativeInt, Query()] = 0,
-    limit: Annotated[NonNegativeInt, Query()] = 10,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
-    min_quantity: Optional[int] = None,
-    max_quantity: Optional[int] = None,
+    limit: Annotated[NonNegativeInt, Query(gt=0)] = 10,
+    min_price: float = Query(None, ge=0),
+    max_price: float = Query(None, ge=0),
+    min_quantity: int = Query(None, ge=0),
+    max_quantity: int = Query(None, ge=0),
 ) -> List[CartResponse]:
     return[CartResponse.from_entity(e) for e in get_many(
         offset, limit, min_price, max_price, min_quantity, max_quantity,

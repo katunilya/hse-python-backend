@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from typing import Annotated, Optional
-
+import pprint 
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import NonNegativeInt, PositiveInt
 
@@ -40,6 +40,11 @@ async def create_item(info: ItemRequest, response: Response) -> ItemResponse:
     }
 )
 async def get_one(id: int) -> ItemResponse:
+    if item_data[id].deleted:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f"Item with id {id} not found"
+        )
     entity = get_one_item(id)
     if not entity:
         raise HTTPException(
@@ -52,9 +57,9 @@ async def get_one(id: int) -> ItemResponse:
 @router.get("/")
 async def get_item_list(
     offset: Annotated[NonNegativeInt, Query()] = 0,
-    limit: Annotated[NonNegativeInt, Query()] = 10,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
+    limit: Annotated[NonNegativeInt, Query(gt=0)] = 10,
+    min_price: float = Query(None, ge=0),
+    max_price: float = Query(None, ge=0),
     show_deleted: Optional[bool] = None,
 ) -> List[ItemResponse]:
     return[ItemResponse.from_entity(e) for e in get_many(
@@ -70,12 +75,8 @@ async def put_item(id: int, info: ItemRequest):
 
 @router.patch("/{id}")
 async def patch_item(id: int, info: PatchItemRequest) -> ItemResponse:
-    entity = patch_item_by_id(id, info.as_patch_item_info())
-    if not entity:
-        raise HTTPException(
-            HTTPStatus.NOT_FOUND, 
-            f"Item with id {id} not found or invalid data"
-        )
+
+    entity = patch_item_by_id(id, info)
     return ItemResponse.from_entity(entity)
 
 

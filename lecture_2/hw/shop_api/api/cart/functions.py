@@ -25,7 +25,7 @@ def get_one_cart(_id: int) -> CartEntity:
     )
     if not cart:
         return None
-    return cart
+    return update_cart_price(cart)
 
 
 def get_many(

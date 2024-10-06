@@ -29,7 +29,7 @@ class ItemResponse(BaseModel):
 class ItemRequest(BaseModel):
     name: str
     price: float
-    deleted: bool
+    deleted: bool = False
 
     def as_item_info(self) -> ItemInfo:
         return ItemInfo(
@@ -42,7 +42,9 @@ class ItemRequest(BaseModel):
 class PatchItemRequest(BaseModel):
     name: Optional[str] = Field(None, description="Name of the item")
     price: Optional[float] = Field(None, description="Price of the item")
-    deleted: Optional[bool] = Field(None, description="Deleted status", exclude=True)
+    deleted: Optional[bool] = Field(None, description="Deleted status")
+
+    model_config = ConfigDict(extra='forbid')
 
     def as_patch_item_info(self):
         return PatchItemInfo(

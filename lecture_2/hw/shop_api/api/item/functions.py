@@ -1,11 +1,13 @@
-import copy
-
 from typing import Iterable
+
+from fastapi import HTTPException
+from http import HTTPStatus
 
 from .entities import *
 from lecture_2.hw.shop_api.api.storages import (
     item_data, item_id_generator
 )
+
 
 def add(info: ItemInfo) -> ItemEntity:
     _id = next(item_id_generator)
@@ -45,27 +47,49 @@ def get_many(
 
 
 def put_item_by_id(_id: int, info: ItemInfo):
-    print("Начинаем put")
     if _id not in item_data:
-        print("Не нашли")
         return None
     item_data[_id] = info
-    print("Замена прошла успешно")
     return ItemEntity(id=_id, info=info)
 
 
-def patch_item_by_id(_id: int, info: PatchItemInfo) -> ItemEntity:
-    if _id not in item_data:
-        return None 
-    update_dict = info.model_dump(exclude_unset=True)
-
-    if "deleted" in update_dict:
-        return None
-
-    item_data[_id] = item_data[_id].model_copy(update=update_dict)
-    return ItemEntity(id=_id, info=item_data[_id])
+def patch_item_by_id(id: int, info: PatchItemInfo) -> ItemEntity:
+    if "deleted" in info.model_dump(exclude_none=True):
+        print("ПЕРЕДАЛИ DELETED")
+        raise HTTPException(
+            status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            detail=f"tryed to change deleted"
+        )
+    if id not in item_data:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_MODIFIED,
+            detail=f"Item with id {id} not found"
+        )
+    entity = get_one_item(id)
+    if entity.info.deleted:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_MODIFIED,
+            detail="Cannot modify a deleted item"
+        )
+    updated_info = entity.info.model_copy(update=info.model_dump(exclude_unset=True))
+    updated_entity = put_item_by_id(id, updated_info)
+    return updated_entity
 
 
 def delete_item_by_id(_id) -> ItemEntity:
-    deleted_item = item_data.pop(_id)
+    if _id not in item_data:
+        raise HTTPException(
+        status_code=HTTPStatus.NOT_FOUND,
+        detail=f"Item with id {id} not found"
+        )
+    
+    # if item_data[_id].deleted:
+    #     raise HTTPException(
+    #     status_code=HTTPStatus.NOT_FOUND,
+    #     detail=f"Item with id {id} not found"
+    #     )
+    
+    item_data[_id].deleted = True
+    deleted_item = item_data[_id]
+
     return ItemEntity(id=_id, info=deleted_item)
