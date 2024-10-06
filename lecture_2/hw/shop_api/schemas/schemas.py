@@ -12,6 +12,10 @@ class ItemUpdate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
 
+    class Config:
+        extra = 'forbid'
+        orm_mode = True
+
 class ItemResponse(ItemBase):
     id: int
     deleted: bool
@@ -26,6 +30,7 @@ class CartItemResponse(BaseModel):
     available: bool
 
     class Config:
+        extra = 'forbid'
         orm_mode = True
 
 class CartResponse(BaseModel):

@@ -7,7 +7,7 @@ import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
 
-from lecture_2.hw.shop_api.main import app
+from lecture_2.hw.main import app
 
 client = TestClient(app)
 faker = Faker()

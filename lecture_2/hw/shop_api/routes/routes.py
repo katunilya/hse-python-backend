@@ -1,6 +1,4 @@
-# routers.py
-
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Depends, Response
 from typing import List, Optional, Annotated
 from http import HTTPStatus
 
@@ -14,14 +12,16 @@ from shop_api.schemas import schemas
 router = APIRouter()
 
 
-@router.post("/cart", response_model=dict)
-async def create_cart(db: Session = Depends(get_db)):
+@router.post("/cart", response_model=dict, status_code=HTTPStatus.CREATED)
+async def create_cart(response: Response, db: Session = Depends(get_db)):
     """Создание новой корзины"""
     cart = Cart()
     db.add(cart)
     db.commit()
     db.refresh(cart)
+    response.headers["location"] = f"/cart/{cart.id}"
     return {"id": cart.id}
+
 
 @router.get(
     "/cart/{cart_id}",
@@ -44,22 +44,26 @@ async def get_cart(cart_id: int, db: Session = Depends(get_db)):
             detail=f"Cart with id {cart_id} not found",
         )
     items = []
+    total_price = 0.0
     for ci in cart.items:
         item = db.query(Item).filter(Item.id == ci.item_id).first()
-        items.append(schemas.CartItemResponse(
-            id=item.id,
-            name=item.name,
-            quantity=ci.quantity,
-            available=not item.deleted
-        ))
-    return schemas.CartResponse(id=cart.id, items=items, price=cart.price)
+        if item:
+            items.append(schemas.CartItemResponse(
+                id=item.id,
+                name=item.name,
+                quantity=ci.quantity,
+                available=not item.deleted
+            ))
+            total_price += item.price * ci.quantity
+    return schemas.CartResponse(id=cart.id, items=items, price=total_price)
+
 
 @router.get("/cart", response_model=List[schemas.CartResponse])
 async def get_carts(
     offset: Annotated[NonNegativeInt, Query()] = 0,
     limit: Annotated[PositiveInt, Query()] = 10,
-    min_price: Optional[float] = Query(None),
-    max_price: Optional[float] = Query(None),
+    min_price: Optional[float] = Query(None, ge=0.0),
+    max_price: Optional[float] = Query(None, ge=0.0),
     min_quantity: Optional[NonNegativeInt] = Query(None),
     max_quantity: Optional[NonNegativeInt] = Query(None),
     db: Session = Depends(get_db)
@@ -67,30 +71,34 @@ async def get_carts(
     """Получение списка корзин с фильтрами"""
     query = db.query(Cart)
 
-    if min_price is not None:
-        query = query.filter(Cart.price >= min_price)
-    if max_price is not None:
-        query = query.filter(Cart.price <= max_price)
-
     carts = query.offset(offset).limit(limit).all()
     result = []
     for cart in carts:
-        total_quantity = sum(ci.quantity for ci in cart.items)
+        items = []
+        total_price = 0.0
+        total_quantity = 0
+        for ci in cart.items:
+            item = db.query(Item).filter(Item.id == ci.item_id).first()
+            if item:
+                items.append(schemas.CartItemResponse(
+                    id=item.id,
+                    name=item.name,
+                    quantity=ci.quantity,
+                    available=not item.deleted
+                ))
+                total_price += item.price * ci.quantity
+                total_quantity += ci.quantity
+        if min_price is not None and total_price < min_price:
+            continue
+        if max_price is not None and total_price > max_price:
+            continue
         if min_quantity is not None and total_quantity < min_quantity:
             continue
         if max_quantity is not None and total_quantity > max_quantity:
             continue
-        items = []
-        for ci in cart.items:
-            item = db.query(Item).filter(Item.id == ci.item_id).first()
-            items.append(schemas.CartItemResponse(
-                id=item.id,
-                name=item.name,
-                quantity=ci.quantity,
-                available=not item.deleted
-            ))
-        result.append(schemas.CartResponse(id=cart.id, items=items, price=cart.price))
+        result.append(schemas.CartResponse(id=cart.id, items=items, price=total_price))
     return result
+
 
 @router.post(
     "/cart/{cart_id}/add/{item_id}",
@@ -108,10 +116,15 @@ async def add_item_to_cart(cart_id: int, item_id: int, db: Session = Depends(get
     """Добавление товара в корзину"""
     cart = db.query(Cart).filter(Cart.id == cart_id).first()
     item = db.query(Item).filter(Item.id == item_id).first()
-    if not cart or not item:
+    if not cart:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND.value,
-            detail="Cart or Item not found"
+            detail=f"Cart with id {cart_id} not found"
+        )
+    if not item or item.deleted:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND.value,
+            detail=f"Item with id {item_id} not found or is deleted"
         )
 
     cart_item = db.query(CartItem).filter(
@@ -124,13 +137,13 @@ async def add_item_to_cart(cart_id: int, item_id: int, db: Session = Depends(get
         cart_item = CartItem(cart_id=cart_id, item_id=item_id, quantity=1)
         db.add(cart_item)
         cart.items.append(cart_item)
-    cart.price += item.price
     db.commit()
     return {"message": "Item added to cart"}
 
+
 # Маршруты для товара
 
-@router.post("/item", response_model=dict)
+@router.post("/item", response_model=schemas.ItemResponse, status_code=HTTPStatus.CREATED)
 async def create_item(
     item: schemas.ItemCreate,
     db: Session = Depends(get_db)
@@ -140,7 +153,8 @@ async def create_item(
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
-    return {"id": db_item.id}
+    return db_item
+
 
 @router.get(
     "/item/{item_id}",
@@ -151,25 +165,26 @@ async def create_item(
         },
         HTTPStatus.NOT_FOUND.value: {
             "description": "Failed to return requested item as it was not found",
-        },
+            },
     },
 )
 async def get_item(item_id: int, db: Session = Depends(get_db)):
     """Получение товара по ID"""
     item = db.query(Item).filter(Item.id == item_id).first()
-    if not item:
+    if not item or item.deleted:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND.value,
             detail=f"Item with id {item_id} not found",
         )
     return item
 
+
 @router.get("/item", response_model=List[schemas.ItemResponse])
 async def get_items(
     offset: Annotated[NonNegativeInt, Query()] = 0,
     limit: Annotated[PositiveInt, Query()] = 10,
-    min_price: Optional[float] = Query(None),
-    max_price: Optional[float] = Query(None),
+    min_price: Optional[float] = Query(None, ge=0.0),
+    max_price: Optional[float] = Query(None, ge=0.0),
     show_deleted: bool = Query(False),
     db: Session = Depends(get_db)
 ):
@@ -185,9 +200,10 @@ async def get_items(
     items = query.offset(offset).limit(limit).all()
     return items
 
+
 @router.put(
     "/item/{item_id}",
-    response_model=dict,
+    response_model=schemas.ItemResponse,
     responses={
         HTTPStatus.OK.value: {
             "description": "Item updated successfully",
@@ -204,7 +220,7 @@ async def update_item(
 ):
     """Замена товара по ID"""
     db_item = db.query(Item).filter(Item.id == item_id).first()
-    if not db_item:
+    if not db_item or db_item.deleted:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND.value,
             detail=f"Item with id {item_id} not found",
@@ -212,17 +228,19 @@ async def update_item(
     db_item.name = item.name
     db_item.price = item.price
     db.commit()
-    return {"message": "Item updated"}
+    db.refresh(db_item)
+    return db_item
+
 
 @router.patch(
     "/item/{item_id}",
-    response_model=dict,
+    response_model=schemas.ItemResponse,
     responses={
         HTTPStatus.OK.value: {
             "description": "Item partially updated successfully",
         },
-        HTTPStatus.NOT_FOUND.value: {
-            "description": "Failed to update item as it was not found",
+        HTTPStatus.NOT_MODIFIED.value: {
+            "description": "Failed to update item",
         },
     },
 )
@@ -233,10 +251,10 @@ async def partial_update_item(
 ):
     """Частичное обновление товара"""
     db_item = db.query(Item).filter(Item.id == item_id).first()
-    if not db_item:
+    if not db_item or db_item.deleted:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND.value,
-            detail=f"Item with id {item_id} not found",
+            status_code=HTTPStatus.NOT_MODIFIED.value,
+            detail=f"Item with id {item_id} not modified",
         )
     if item.name is not None:
         db_item.name = item.name
@@ -244,7 +262,9 @@ async def partial_update_item(
         db_item.price = item.price
     # Поле 'deleted' не изменяем
     db.commit()
-    return {"message": "Item partially updated"}
+    db.refresh(db_item)
+    return db_item
+
 
 @router.delete(
     "/item/{item_id}",
