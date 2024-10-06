@@ -151,7 +151,7 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
         if "max_price" in query:
             assert all(item["price"] <= query["max_price"] for item in data)
 
-        quantity = sum(item["quantity"] for item in data)
+        quantity = sum(item["quantity"] for cart in data for item in cart["items"])
 
         if "min_quantity" in query:
             assert quantity >= query["min_quantity"]

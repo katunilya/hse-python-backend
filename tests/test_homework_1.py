@@ -42,11 +42,15 @@ async def test_not_found(method: str, path: str):
 )
 async def test_factorial(query: dict[str, Any], status_code: int):
     async with TestClient(app) as client:
+
         # Manually build the query string
         query_string = '&'.join([f"{k}={v}" for k, v in query.items()])
         url = f"/factorial?{query_string}" if query_string else "/factorial"
 
         response = await client.get(url)
+
+        #response = await client.get("/factorial", query_string=query)
+
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
