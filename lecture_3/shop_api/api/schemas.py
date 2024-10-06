@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, PositiveFloat, NonNegativeFloat
 
-from lecture_2.hw.shop_api.shop.models import (
+from ..shop.models import (
     CartItem,
     Cart,
     Item,

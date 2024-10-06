@@ -5,13 +5,13 @@ from http import HTTPStatus
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import PositiveFloat, NonNegativeInt, PositiveInt, NonNegativeFloat
 
-from lecture_2.hw.shop_api.api.schemas import (
+from .schemas import (
     CartResponse,
     ItemRequest,
     ItemResponse,
     PatchItemRequest,
 )
-from lecture_2.hw.shop_api import shop
+from .. import shop
 
 cart_router = APIRouter(prefix="/cart")
 item_router = APIRouter(prefix="/item")

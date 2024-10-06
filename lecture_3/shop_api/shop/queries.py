@@ -1,6 +1,6 @@
 from typing import Iterable, Tuple
 
-from lecture_2.hw.shop_api.shop.models import (
+from .models import (
     Cart,
     CartItem,
     Item,
