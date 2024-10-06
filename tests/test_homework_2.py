@@ -253,7 +253,7 @@ def test_put_item(
             {"name": "new name", "price": 9.99},
             HTTPStatus.NOT_MODIFIED,
         ),  #
-        ("existing_item", {}, HTTPStatus.OK),  #
+        ("existing_item", {}, HTTPStatus.NOT_MODIFIED),  #
         ("existing_item", {"price": 9.99}, HTTPStatus.OK),
         ("existing_item", {"name": "new name", "price": 9.99}, HTTPStatus.OK),
         (
