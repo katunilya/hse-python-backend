@@ -4,16 +4,16 @@ services:
   dev:
     image: python-backend-lecture-3-dev:latest
     build:
-      context: .
-      dockerfile: ./docker/demo_service/Dockerfile
+      context: ../../lecture_3
+      dockerfile: ../../lecture_3/docker/demo_service/Dockerfile
       target: dev
     restart: always
 
   local:
     image: python-backend-lecture-3-local:latest
     build:
-      context: .
-      dockerfile: ./docker/demo_service/Dockerfile
+      context: ../../lecture_3
+      dockerfile: ../../lecture_3/docker/demo_service/Dockerfile
       target: local
     restart: always
     ports:

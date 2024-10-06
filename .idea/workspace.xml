@@ -5,26 +5,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="135a3545-428d-4da1-a22d-25bf8ece4195" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/lecture_2/hw/shop_api/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lecture_2/hw/shop_api/ddoser.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lecture_2/hw/shop_api/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lecture_2/hw/shop_api/settings/prometheus/prometheus.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lecture_3/settings/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/itmo-ai-python-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/itmo-ai-python-backend.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/myapp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/src/factorial.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/factorial.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/src/fibonacci.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/fibonacci.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/src/mean.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/mean.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/src/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/tests/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw1/tests/test_homework_1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lecture_1/hw/math_plain_asgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_1/hw/math_plain_asgi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lecture_2/hw/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_2/hw/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lecture_2/hw/shop_api/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_2/hw/shop_api/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lecture_3/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/lecture_2/hw/docker-compose.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
@@ -37,23 +46,51 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "hw2__stepan5024",
-    "last_opened_file_path": "/Users/stepanbokarev/Documents/GitHub/itmo-ai-python-backend/lecture_1/hw",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;hw2__stepan5024&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/bokar/Documents/GitHub/itmo-ai-python-backend/lecture_2/hw/shop_api&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.tabs&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\bokar\Documents\GitHub\itmo-ai-python-backend\lecture_2\hw\shop_api" />
+      <recent name="C:\Users\bokar\Documents\GitHub\itmo-ai-python-backend\lecture_3\settings" />
       <recent name="$PROJECT_DIR$/lecture_1/hw" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\bokar\Documents\GitHub\itmo-ai-python-backend\lecture_2\hw" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml" />
+      <method v="2" />
+    </configuration>
+    <configuration name="hw: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="envFilePath" value="" />
+          <option name="sourceFilePath" value="lecture_2/hw/docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.hw: Compose Deployment" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -74,6 +111,8 @@
       <workItem from="1727877970488" duration="455000" />
       <workItem from="1727878450378" duration="2004000" />
       <workItem from="1727954364859" duration="2322000" />
+      <workItem from="1728201021060" duration="1746000" />
+      <workItem from="1728202819501" duration="2740000" />
     </task>
     <servers />
   </component>

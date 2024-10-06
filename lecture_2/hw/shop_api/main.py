@@ -3,9 +3,12 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional
 import uuid
 import logging
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
+
+Instrumentator().instrument(app).expose(app)
 
 class ItemCreate(BaseModel):
     name: str
