@@ -54,7 +54,7 @@ def get_carts(
     min_price: Annotated[NonNegativeFloat, Query()] = 0,
     max_price: Annotated[PositiveFloat, Query()] = None,
     min_quantity: Annotated[NonNegativeInt, Query()] = 0,
-    max_quantity: Annotated[PositiveInt, Query()] = None,
+    max_quantity: Annotated[NonNegativeInt, Query()] = None,
 ) -> List[CartResponse]:
     cart_list = shop.get_carts(
         offset=offset,
@@ -221,13 +221,22 @@ def put_item(id: int, info: ItemRequest) -> ItemResponse:
 )
 def patch_item(id: int, info: PatchItemRequest) -> ItemResponse:
     orig_item = shop.get_item(id)
-    o_name, o_price = orig_item.info.name, orig_item.info.price
-    info = info.as_patch_item_info()
 
     if orig_item is None:
         raise HTTPException(
             HTTPStatus.NOT_FOUND,
             f"Item {id} was not found",
+        )
+    
+    orig_info = orig_item.info
+    o_name, o_price, o_deleted = orig_info.name, orig_info.price, orig_info.deleted
+    info = info.as_patch_item_info()
+
+    
+    if o_deleted:
+        raise HTTPException(
+            HTTPStatus.NOT_MODIFIED,
+            "Item was not modified",
         )
 
     item = shop.patch_item(id, info)

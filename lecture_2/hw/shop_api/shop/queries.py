@@ -27,7 +27,7 @@ _id_gen = int_id_gen()
 
 def post_cart() -> Cart:
     _id = next(_id_gen)
-    _carts[_id] = Cart(id=_id)
+    _carts[_id] = Cart(id=_id, items=[])
 
     return _id, _carts[_id]
 
@@ -97,7 +97,7 @@ def add_item_to_cart(cart_id: int, item_id: int) -> Tuple[Cart, ItemInfo]:
     for cart_item in cart.items:
         id_ = cart_item.item.id
 
-        if item.id == id_:
+        if item_id == id_:
             cart_item.quantity += 1
             cart.price += item.info.price
 

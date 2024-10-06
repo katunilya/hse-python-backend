@@ -31,5 +31,5 @@ class CartItem:
 @dataclass
 class Cart:
     id: int
-    items: list[CartItem] = field(default_factory=lambda: [])
+    items: list[CartItem]
     price: float = 0.0
