@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+prometheus_client
+prometheus-fastapi-instrumentator==1.1.1
