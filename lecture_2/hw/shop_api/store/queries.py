@@ -18,7 +18,14 @@ def add_item(cart_id: int, item_id: int):
     item = _data_items.get(item_id)
     if not cart or not item:
         return None
-    cart["items"].append(item)
+    # Проверяем, есть ли уже товар в корзине
+    for cart_item in cart["items"]:
+        if cart_item["id"] == item_id:
+            cart_item["quantity"] += 1
+            cart["price"] += item["price"]
+            return cart
+    # Если товара нет, добавляем новый с quantity = 1
+    cart["items"].append({"id": item_id, "quantity": 1, "price": item["price"]})
     cart["price"] += item["price"]
     return cart
 
@@ -34,3 +41,7 @@ def get_item(item_id: int):
 
 def delete_item(item_id: int):
     item = _data_items.get(item_id)
+    if not item:
+        return False
+    item["deleted"] = True
+    return True

@@ -23,3 +23,31 @@ async def delete_item(id: int):
     if not deleted:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
     return {"deleted": True}
+
+@router.put("/{id}", response_model=dict)
+async def update_item(id: int, item_data: dict):
+    item = queries.get_item(id)
+    if not item:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
+
+    # Проверяем наличие обязательных полей
+    if "name" not in item_data or "price" not in item_data:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Missing fields")
+
+    updated_item = queries.update_item(id, item_data)
+    return updated_item
+
+
+@router.patch("/{id}", response_model=dict)
+async def patch_item(id: int, item_data: dict):
+    item = queries.get_item(id)
+    if not item:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
+
+    # Проверяем, не удалён ли товар
+    if item.get("deleted", False):
+        raise HTTPException(status_code=HTTPStatus.NOT_MODIFIED, detail="Item is deleted")
+
+    # Обновляем только переданные поля
+    updated_item = queries.patch_item(id, item_data)
+    return updated_item

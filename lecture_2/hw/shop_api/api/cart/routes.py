@@ -10,12 +10,19 @@ async def create_cart(response: Response):
     response.headers["location"] = f"/cart/{cart['id']}"
     return cart
 
-@router.get("/{id}", response_model=dict)
-async def get_cart_by_id(id: int):
-    cart = queries.get_cart(id)
-    if not cart:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Cart not found")
-    return cart
+@router.get("/", response_model=list)
+async def get_cart_list(min_price: float = None, max_price: float = None, offset: int = 0, limit: int = 10):
+    if offset < 0 or limit <= 0:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid pagination parameters")
+
+    filtered_carts = list(_data_carts.values())
+
+    if min_price is not None:
+        filtered_carts = [cart for cart in filtered_carts if cart["price"] >= min_price]
+    if max_price is not None:
+        filtered_carts = [cart for cart in filtered_carts if cart["price"] <= max_price]
+
+    return filtered_carts[offset:offset + limit]
 
 @router.post("/{cart_id}/add/{item_id}")
 async def add_item_to_cart(cart_id: int, item_id: int):
