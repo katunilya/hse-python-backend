@@ -1,6 +1,7 @@
-from pydantic import BaseModel
 
 from typing import List
+
+from pydantic import BaseModel
 
 class CartItem(BaseModel):
     id: int
@@ -12,13 +13,3 @@ class Cart(BaseModel):
     id: int
     items: List[CartItem] = []
     price: float = 0.0
-
-class ItemDto(BaseModel):
-    name: str
-    price: float
-
-class Item(BaseModel):
-    id: int
-    name: str
-    price: float
-    deleted: bool = False
