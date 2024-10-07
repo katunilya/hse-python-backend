@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 from http import HTTPStatus
-from shop_api.store import queries
+from ...store import queries
 
 router = APIRouter(prefix="/item")
 
