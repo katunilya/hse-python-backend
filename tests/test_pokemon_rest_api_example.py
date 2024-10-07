@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from lecture_2.rest_example import store
 from lecture_2.rest_example.main import app
-from lecture_2.rest_example.store.models import PokemonEntity, PokemonInfo
+from lecture_2.rest_example.store import PokemonEntity, PokemonInfo
 
 faker = Faker()
 client = TestClient(app)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
-from lecture_2.rest_example.store.models import (
+from lecture_2.rest_example.store import (
     PatchPokemonInfo,
     PokemonEntity,
     PokemonInfo,
