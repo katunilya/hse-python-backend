@@ -1,144 +1,153 @@
-from typing import Optional, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import JSONResponse
+from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
-from typing import List
+from http import HTTPStatus
+from lecture_2.hw.shop_api.models import Item, Cart, CartItem, ItemPost
+
+app = FastAPI(title="Shop API")
+
+items: Dict[int, Item] = {}
+carts: Dict[int, Cart] = {}
 
 
-class Item(BaseModel):
-    id: int
-    name: str
-    price: float
-    deleted: bool = False
-
-
-class CartItem(BaseModel):
-    id: int
-    name: str
-    quantity: int
-    available: bool
-
-
-class Cart(BaseModel):
+class CartResponse(BaseModel):
     id: int
     items: List[CartItem]
     price: float
 
 
-app = FastAPI(title="Shop API")
-
-# База данных в памяти (для примера)
-items_db = {}
-carts_db = {}
-
-
-# --- Item Endpoints ---
-@app.post("/item", response_model=Item)
-def create_item(item: Item):
-    if item.id in items_db:
-        raise HTTPException(status_code=400, detail="Item already exists")
-    items_db[item.id] = item
-    return item
+class ItemResponse(BaseModel):
+    id: int
+    name: str
+    price: float
 
 
-@app.get("/item/{id}", response_model=Item)
+@app.post("/cart", status_code=status.HTTP_201_CREATED)
+def create_cart():
+    cart_id = len(carts) + 1
+    carts[cart_id] = Cart(id=cart_id)
+    return JSONResponse(content={"id": cart_id},
+                        status_code=status.HTTP_201_CREATED,
+                        headers={"Location": f"/cart/{cart_id}"})
+
+
+@app.get("/cart/{id}", response_model=CartResponse)
+def get_cart(id: int):
+    if id not in carts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart not found")
+    return carts[id]
+
+
+@app.get("/cart", response_model=List[CartResponse])
+def get_cart_list(offset: int = 0,
+                  limit: int = 10,
+                  min_price: Optional[float] = None,
+                  max_price: Optional[float] = None,
+                  min_quantity: Optional[int] = None,
+                  max_quantity: Optional[int] = None):
+    if offset < 0 or limit <= 0:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Offset must be non-negative and limit must be positive")
+    for value in [min_price, max_price, min_quantity, max_quantity]:
+        if value is not None and value < 0:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail="Price and quantity must be non-negative")
+
+    filtered_carts = [cart for cart in list(carts.values())[offset:offset + limit]
+                      if (min_price is None or cart.price >= min_price) and
+                      (max_price is None or cart.price <= max_price) and
+                      (min_quantity is None or sum(item.quantity for item in cart.items) >= min_quantity) and
+                      (max_quantity is None or sum(item.quantity for item in cart.items) <= max_quantity)]
+    return filtered_carts
+
+
+@app.post("/cart/{cart_id}/add/{item_id}")
+def add_to_cart(cart_id: int, item_id: int):
+    if cart_id not in carts:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart not found")
+    if item_id not in items or items[item_id].deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found or deleted")
+
+    item = items[item_id]
+    cart = carts[cart_id]
+    for cart_item in cart.items:
+        if cart_item.id == item.id:
+            cart_item.quantity += 1
+            break
+    else:
+        cart.items.append(CartItem(id=item.id, name=item.name, quantity=1))
+    cart.price += item.price
+    return cart
+
+
+@app.post("/item", status_code=status.HTTP_201_CREATED, response_model=ItemResponse)
+def create_item(item: ItemPost):
+    item_id = len(items) + 1
+    new_item = Item(id=item_id, name=item.name, price=item.price)
+    items[item_id] = new_item
+    return JSONResponse(
+        content={"id": new_item.id, "name": new_item.name, "price": new_item.price},
+        status_code=status.HTTP_201_CREATED,
+        headers={"Location": f"/item/{item_id}"})
+
+
+@app.get("/item/{id}", response_model=ItemResponse, status_code=status.HTTP_200_OK)
 def get_item(id: int):
-    item = items_db.get(id)
-    if not item or item.deleted:
-        raise HTTPException(status_code=404, detail="Item not found")
+    if id not in items or items[id].deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    return items[id]
+
+
+@app.get("/item", response_model=List[ItemResponse])
+def get_item_list(offset: int = 0,
+                  limit: int = 10,
+                  min_price: Optional[float] = None,
+                  max_price: Optional[float] = None,
+                  show_deleted: bool = False):
+    if offset < 0 or limit <= 0:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Offset must be non-negative and limit positive")
+    if any(val is not None and val < 0 for val in (min_price, max_price)):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Price must be non-negative")
+
+    filtered_items = [item for item in list(items.values())[offset:offset + limit]
+                      if (show_deleted or not item.deleted) and
+                      (min_price is None or item.price >= min_price) and
+                      (max_price is None or item.price <= max_price)]
+    return filtered_items
+
+
+@app.put("/item/{id}", response_model=ItemResponse)
+def update_item(id: int, item: ItemPost):
+    if id not in items:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    new_item = Item(id=id, name=item.name, price=item.price)
+    items[id] = new_item
+    return new_item
+
+
+@app.patch("/item/{id}", response_model=ItemResponse)
+def patch_item(id: int, body: dict[str, Any]):
+    item = items.get(id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    if item.deleted:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED, detail="Item is deleted")
+
+    allowed_fields = {"name", "price"}
+    for key, value in body.items():
+        if key in allowed_fields:
+            setattr(item, key, value)
+        else:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail="Invalid field in request body")
     return item
-
-
-@app.get("/item", response_model=List[Item])
-def get_items(offset: int = 0, limit: int = 10, min_price: Optional[float] = None, max_price: Optional[float] = None,
-              show_deleted: bool = False):
-    items = [item for item in items_db.values() if (show_deleted or not item.deleted)]
-
-    if min_price is not None:
-        items = [item for item in items if item.price >= min_price]
-    if max_price is not None:
-        items = [item for item in items if item.price <= max_price]
-
-    return items[offset:offset + limit]
-
-
-@app.put("/item/{id}", response_model=Item)
-def update_item(id: int, item: Item):
-    if id not in items_db or items_db[id].deleted:
-        raise HTTPException(status_code=404, detail="Item not found")
-    items_db[id] = item
-    return item
-
-
-@app.patch("/item/{id}", response_model=Item)
-def patch_item(id: int, item: Item):
-    stored_item = items_db.get(id)
-    if not stored_item or stored_item.deleted:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    stored_item_data = stored_item.dict()
-    updated_item = stored_item_data | item.dict(exclude_unset=True)
-    items_db[id] = Item(**updated_item)
-    return items_db[id]
 
 
 @app.delete("/item/{id}")
 def delete_item(id: int):
-    item = items_db.get(id)
-    if not item or item.deleted:
-        raise HTTPException(status_code=404, detail="Item not found")
-    item.deleted = True
+    if id not in items:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    items[id].deleted = True
     return {"message": "Item marked as deleted"}
-
-
-# --- Cart Endpoints ---
-@app.post("/cart", response_model=int)
-def create_cart():
-    new_cart_id = max(carts_db.keys(), default=0) + 1
-    carts_db[new_cart_id] = Cart(id=new_cart_id, items=[], price=0.0)
-    return new_cart_id
-
-
-@app.get("/cart/{id}", response_model=Cart)
-def get_cart(id: int):
-    cart = carts_db.get(id)
-    if not cart:
-        raise HTTPException(status_code=404, detail="Cart not found")
-    return cart
-
-
-@app.get("/cart", response_model=List[Cart])
-def get_carts(offset: int = 0, limit: int = 10, min_price: Optional[float] = None, max_price: Optional[float] = None,
-              min_quantity: Optional[int] = None, max_quantity: Optional[int] = None):
-    carts = list(carts_db.values())
-
-    if min_price is not None:
-        carts = [cart for cart in carts if cart.price >= min_price]
-    if max_price is not None:
-        carts = [cart for cart in carts if cart.price <= max_price]
-    if min_quantity is not None:
-        carts = [cart for cart in carts if sum(item.quantity for item in cart.items) >= min_quantity]
-    if max_quantity is not None:
-        carts = [cart for cart in carts if sum(item.quantity for item in cart.items) <= max_quantity]
-
-    return carts[offset:offset + limit]
-
-
-@app.post("/cart/{cart_id}/add/{item_id}", response_model=Cart)
-def add_item_to_cart(cart_id: int, item_id: int):
-    cart = carts_db.get(cart_id)
-    if not cart:
-        raise HTTPException(status_code=404, detail="Cart not found")
-
-    item = items_db.get(item_id)
-    if not item or item.deleted:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    for cart_item in cart.items:
-        if cart_item.id == item_id:
-            cart_item.quantity += 1
-            break
-    else:
-        cart.items.append(CartItem(id=item.id, name=item.name, quantity=1, available=True))
-
-    cart.price += item.price
-    return cart
