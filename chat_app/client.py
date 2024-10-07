@@ -26,9 +26,9 @@ async def chat_client():
                     "Do you want to join the existing chat room? (y/n): "
                 )
                 if join_existing.lower() == "y":
-                    break  
+                    break
                 else:
-                    continue  
+                    continue
             else:
                 print(f"Error: {response.json()['detail']}")
                 sys.exit(1)
@@ -45,21 +45,21 @@ async def chat_client():
                         )
                         if response.status_code == 200:
                             print(response.json()["message"])
-                            break  
+                            break
                         else:
                             print(f"Error: {response.json()['detail']}")
-                            continue  
+                            continue
                     else:
-                        continue  
+                        continue
                 else:
                     print(f"Joining chat room '{chat_name}'.")
-                    break  
+                    break
             else:
                 print(f"Error: {response.json()['detail']}")
                 sys.exit(1)
         else:
             print("Invalid choice. Please enter 1 or 2.")
-            continue  
+            continue
 
     username = input("Enter your username: ")
 
@@ -90,5 +90,6 @@ async def chat_client():
                     break
 
         await asyncio.gather(receive(), send())
+
 
 asyncio.run(chat_client())

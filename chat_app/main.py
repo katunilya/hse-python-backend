@@ -94,7 +94,7 @@ async def chat_endpoint(websocket: WebSocket, chat_name: str):
         while True:
             data = await websocket.receive_text()
             if data.strip() == "":
-                continue  
+                continue
             username = manager.get_username(chat_name, websocket)
             message = f"{username}: {data}"
             await manager.broadcast(chat_name, message)
