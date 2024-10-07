@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Dict
 
+
 class ItemCreate(BaseModel):
     name: str
     price: float = Field(gt=0.0)
@@ -30,7 +31,7 @@ class Item(BaseModel):
 
 
 class CartItem(BaseModel):
-    id: int  
+    id: int
     name: str | None = None
     quantity: int = 1
     available: bool = True

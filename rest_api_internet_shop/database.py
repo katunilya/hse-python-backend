@@ -1,6 +1,7 @@
 from typing import Dict
 from rest_api_internet_shop.models import Item, Cart
 
+
 class DataStore:
     def __init__(self):
         self.items_db: Dict[int, Item] = {}
@@ -15,5 +16,6 @@ class DataStore:
     def get_new_cart_id(self) -> int:
         self.cart_id_counter += 1
         return self.cart_id_counter
+
 
 data_store = DataStore()

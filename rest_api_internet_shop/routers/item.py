@@ -9,6 +9,7 @@ from rest_api_internet_shop.database import data_store
 
 router = APIRouter()
 
+
 @router.post("/", status_code=201, response_model=Item)
 def create_item(item_data: ItemCreate, response: Response):
     item_id = data_store.get_new_item_id()
@@ -17,12 +18,14 @@ def create_item(item_data: ItemCreate, response: Response):
     response.headers["Location"] = f"/item/{item_id}"
     return item.model_dump()
 
+
 @router.get("/{id}", response_model=Item)
 def get_item(id: int = Path(..., ge=1)):
     item = data_store.items_db.get(id)
     if not item or item.deleted:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
+
 
 @router.get("/", response_model=List[Item])
 def get_items(
@@ -41,6 +44,7 @@ def get_items(
     ]
     return items[offset : offset + limit]
 
+
 @router.put("/{id}", response_model=Item)
 def replace_item(id: int = Path(..., ge=1), item_data: ItemUpdate = Body(...)):
     item = data_store.items_db.get(id)
@@ -49,6 +53,7 @@ def replace_item(id: int = Path(..., ge=1), item_data: ItemUpdate = Body(...)):
     item.name = item_data.name
     item.price = item_data.price
     return item
+
 
 @router.patch("/{id}", response_model=Item)
 def update_item(id: int = Path(..., ge=1), item_data: ItemPatch = Body(...)):
@@ -62,6 +67,7 @@ def update_item(id: int = Path(..., ge=1), item_data: ItemPatch = Body(...)):
     if item_data.price is not None:
         item.price = item_data.price
     return item
+
 
 @router.delete("/{id}")
 def delete_item(id: int = Path(..., ge=1)):

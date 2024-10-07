@@ -76,14 +76,12 @@ def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
     return existing_item
 
 
-
 def test_post_cart() -> None:
     response = client.post("/cart")
 
     assert response.status_code == HTTPStatus.CREATED
     assert "location" in response.headers
     assert "id" in response.json()
-
 
 
 @pytest.mark.parametrize(
@@ -114,7 +112,6 @@ def test_get_cart(request, cart: int, not_empty: bool) -> None:
         assert response_json["price"] == pytest.approx(price, 1e-8)
     else:
         assert response_json["price"] == 0.0
-
 
 
 @pytest.mark.parametrize(
@@ -160,7 +157,6 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
             assert quantity <= query["max_quantity"]
 
 
-
 def test_post_item() -> None:
     item = {"name": "test item", "price": 9.99}
     response = client.post("/item", json=item)
@@ -172,7 +168,6 @@ def test_post_item() -> None:
     assert item["name"] == data["name"]
 
 
-
 def test_get_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
 
@@ -180,7 +175,6 @@ def test_get_item(existing_item: dict[str, Any]) -> None:
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == existing_item
-
 
 
 @pytest.mark.parametrize(
@@ -217,7 +211,6 @@ def test_get_item_list(query: dict[str, Any], status_code: int) -> None:
             assert all(item["deleted"] is False for item in data)
 
 
-
 @pytest.mark.parametrize(
     ("body", "status_code"),
     [
@@ -240,7 +233,6 @@ def test_put_item(
         new_item = existing_item.copy()
         new_item.update(body)
         assert response.json() == new_item
-
 
 
 @pytest.mark.parametrize(
@@ -278,7 +270,6 @@ def test_patch_item(request, item: str, body: dict[str, Any], status_code: int) 
         patched_item = response.json()
 
         assert patched_item == patch_response_body
-
 
 
 def test_delete_item(existing_item: dict[str, Any]) -> None:
