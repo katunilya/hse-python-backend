@@ -33,4 +33,4 @@ def get_item(item_id: int):
     return _data_items.get(item_id)
 
 def delete_item(item_id: int):
-    item = _data_items.get(item_id
+    item = _data_items.get(item_id)
