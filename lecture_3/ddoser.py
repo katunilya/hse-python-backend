@@ -21,7 +21,7 @@ def get_users():
     for i in range(500):
         
         response = requests.get(
-            f"http://localhost:8080/cart/1",
+            f"http://localhost:8080/1",
             # params={"id": faker.random_number(digits=2)},
         )
         print(response)
