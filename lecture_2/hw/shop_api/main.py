@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Response
+
 from lecture_2.hw.shop_api.models import Cart, Item, ItemDto, DEFAULT_ITEM_DTO_FIELDS, ItemCart
 
 app = FastAPI(title="Shop API")
