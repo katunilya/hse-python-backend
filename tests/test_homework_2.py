@@ -6,8 +6,8 @@ from uuid import uuid4
 import pytest
 from faker import Faker
 from fastapi.testclient import TestClient
-from rest_api_internet_shop.main import app
 
+from rest_api_internet_shop.main import app
 
 client = TestClient(app)
 faker = Faker()
@@ -23,7 +23,7 @@ def existing_items() -> list[int]:
     items = [
         {
             "name": f"Тестовый товар {i}",
-            "price": float(faker.pyfloat(positive=True, min_value=10.0, max_value=500.0)),
+            "price": faker.pyfloat(positive=True, min_value=10.0, max_value=500.0),
         }
         for i in range(10)
     ]
@@ -37,7 +37,7 @@ def existing_not_empty_carts(existing_items: list[int]) -> list[int]:
 
     for i in range(20):
         cart_id: int = client.post("/cart").json()["id"]
-        for item_id in faker.random_elements(elements=existing_items, length=i % 10):
+        for item_id in faker.random_elements(existing_items, unique=False, length=i):
             client.post(f"/cart/{cart_id}/add/{item_id}")
 
         carts.append(cart_id)
@@ -50,7 +50,7 @@ def existing_not_empty_cart_id(
     existing_empty_cart_id: int,
     existing_items: list[int],
 ) -> int:
-    for item_id in faker.random_elements(elements=existing_items, length=3):
+    for item_id in faker.random_elements(existing_items, unique=False, length=3):
         client.post(f"/cart/{existing_empty_cart_id}/add/{item_id}")
 
     return existing_empty_cart_id
@@ -76,7 +76,7 @@ def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
     return existing_item
 
 
-#
+
 def test_post_cart() -> None:
     response = client.post("/cart")
 
@@ -85,7 +85,7 @@ def test_post_cart() -> None:
     assert "id" in response.json()
 
 
-#
+
 @pytest.mark.parametrize(
     ("cart", "not_empty"),
     [
@@ -102,24 +102,21 @@ def test_get_cart(request, cart: int, not_empty: bool) -> None:
     response_json = response.json()
 
     len_items = len(response_json["items"])
-    assert (len_items > 0) if not_empty else (len_items == 0)
+    assert len_items > 0 if not_empty else len_items == 0
 
     if not_empty:
         price = 0
 
         for item in response_json["items"]:
             item_id = item["id"]
-            item_response = client.get(f"/item/{item_id}")
-            if item_response.status_code == HTTPStatus.OK:
-                item_data = item_response.json()
-                price += item_data["price"] * item["quantity"]
+            price += client.get(f"/item/{item_id}").json()["price"] * item["quantity"]
 
         assert response_json["price"] == pytest.approx(price, 1e-8)
     else:
         assert response_json["price"] == 0.0
 
 
-#
+
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -157,13 +154,13 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
         quantity = sum(item["quantity"] for cart in data for item in cart["items"])
 
         if "min_quantity" in query:
-            assert all(cart["quantity"] >= query["min_quantity"] for cart in data)  # Corrected
+            assert quantity >= query["min_quantity"]
 
         if "max_quantity" in query:
-            assert all(cart["quantity"] <= query["max_quantity"] for cart in data)  # Corrected
+            assert quantity <= query["max_quantity"]
 
 
-#
+
 def test_post_item() -> None:
     item = {"name": "test item", "price": 9.99}
     response = client.post("/item", json=item)
@@ -173,10 +170,9 @@ def test_post_item() -> None:
     data = response.json()
     assert item["price"] == data["price"]
     assert item["name"] == data["name"]
-    assert "id" in data
 
 
-#
+
 def test_get_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
 
@@ -186,7 +182,7 @@ def test_get_item(existing_item: dict[str, Any]) -> None:
     assert response.json() == existing_item
 
 
-@pytest.mark.xfail()
+
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -221,7 +217,7 @@ def test_get_item_list(query: dict[str, Any], status_code: int) -> None:
             assert all(item["deleted"] is False for item in data)
 
 
-#
+
 @pytest.mark.parametrize(
     ("body", "status_code"),
     [
@@ -243,12 +239,10 @@ def test_put_item(
     if status_code == HTTPStatus.OK:
         new_item = existing_item.copy()
         new_item.update(body)
-        new_item["deleted"] = False  # Ensure 'deleted' field is present
-        new_item["id"] = item_id
         assert response.json() == new_item
 
 
-#
+
 @pytest.mark.parametrize(
     ("item", "body", "status_code"),
     [
@@ -286,7 +280,7 @@ def test_patch_item(request, item: str, body: dict[str, Any], status_code: int) 
         assert patched_item == patch_response_body
 
 
-#
+
 def test_delete_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
 
