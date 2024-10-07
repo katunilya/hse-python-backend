@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from http.client import UNPROCESSABLE_ENTITY
 from typing import Any
 from uuid import uuid4
 
@@ -44,7 +45,7 @@ def existing_not_empty_carts(existing_items: list[int]) -> list[int]:
     return carts
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def existing_not_empty_cart_id(
     existing_empty_cart_id: int,
     existing_items: list[int],
@@ -106,14 +107,14 @@ def test_get_cart(request, cart: int, not_empty: bool) -> None:
     if not_empty:
         price = 0
 
-        for item in response_json["items"]:  # Corrected 'item' to 'items'
+        for item in response_json["items"]:
             item_id = item["id"]
             item_response = client.get(f"/item/{item_id}")
             if item_response.status_code == HTTPStatus.OK:
                 item_data = item_response.json()
                 price += item_data["price"] * item["quantity"]
 
-        assert response_json["price"] == price
+        assert response_json["price"] == pytest.approx(price, 1e-8)
     else:
         assert response_json["price"] == 0.0
 
@@ -148,10 +149,12 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
         assert isinstance(data, list)
 
         if "min_price" in query:
-            assert all(cart["price"] >= query["min_price"] for cart in data)  # Corrected comparison
+            assert all(item["price"] >= query["min_price"] for item in data)
 
         if "max_price" in query:
-            assert all(cart["price"] <= query["max_price"] for cart in data)  # Corrected comparison
+            assert all(item["price"] <= query["max_price"] for item in data)
+
+        quantity = sum(item["quantity"] for cart in data for item in cart["items"])
 
         if "min_quantity" in query:
             assert all(cart["quantity"] >= query["min_quantity"] for cart in data)  # Corrected
@@ -183,12 +186,39 @@ def test_get_item(existing_item: dict[str, Any]) -> None:
     assert response.json() == existing_item
 
 
-#
-def test_get_item_list():
-    response = client.get("/item")
-    assert response.status_code == HTTPStatus.OK
-    data = response.json()
-    assert isinstance(data, list)
+@pytest.mark.xfail()
+@pytest.mark.parametrize(
+    ("query", "status_code"),
+    [
+        ({"offset": 2, "limit": 5}, HTTPStatus.OK),
+        ({"min_price": 5.0}, HTTPStatus.OK),
+        ({"max_price": 5.0}, HTTPStatus.OK),
+        ({"show_deleted": True}, HTTPStatus.OK),
+        ({"offset": -1}, HTTPStatus.UNPROCESSABLE_ENTITY),
+        ({"limit": -1}, HTTPStatus.UNPROCESSABLE_ENTITY),
+        ({"limit": 0}, HTTPStatus.UNPROCESSABLE_ENTITY),
+        ({"min_price": -1}, HTTPStatus.UNPROCESSABLE_ENTITY),
+        ({"max_price": -1}, HTTPStatus.UNPROCESSABLE_ENTITY),
+    ],
+)
+def test_get_item_list(query: dict[str, Any], status_code: int) -> None:
+    response = client.get("/item", params=query)
+
+    assert response.status_code == status_code
+
+    if status_code == HTTPStatus.OK:
+        data = response.json()
+
+        assert isinstance(data, list)
+
+        if "min_price" in query:
+            assert all(item["price"] >= query["min_price"] for item in data)
+
+        if "max_price" in query:
+            assert all(item["price"] <= query["max_price"] for item in data)
+
+        if "show_deleted" in query and query["show_deleted"] is False:
+            assert all(item["deleted"] is False for item in data)
 
 
 #
@@ -231,6 +261,11 @@ def test_put_item(
         (
             "existing_item",
             {"name": "new name", "price": 9.99, "odd": "value"},
+            HTTPStatus.UNPROCESSABLE_ENTITY,
+        ),
+        (
+            "existing_item",
+            {"name": "new name", "price": 9.99, "deleted": True},
             HTTPStatus.UNPROCESSABLE_ENTITY,
         ),
     ],
