@@ -1,6 +1,8 @@
 from typing import List
 from pydantic import BaseModel
 
+DEFAULT_ITEM_DTO_FIELDS = ["name", "price"]
+
 class Item(BaseModel):
     """
     Модель товара в системе.
