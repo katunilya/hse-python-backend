@@ -67,9 +67,12 @@ def patch_item(item_id: int, item_data: ItemRequest) -> Optional[Item]:
         item.price = item_data.price
     return item
 
-def delete_item(item_id: int) -> Optional[Item]:
+
+def delete_item(item_id: int) -> dict:
     item = _item_data.get(item_id)
-    if (not item) or item.deleted:
-        return None
+    if not item:
+        return {"deleted": False}
+    if item.deleted:
+        return {"deleted": True}
     item.deleted = True
-    return item
+    return {"deleted": True}
