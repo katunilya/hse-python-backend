@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Query
 from http import HTTPStatus
 from typing import List, Optional
 from lecture_2.hw.shop_api.store import queries
