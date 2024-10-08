@@ -14,3 +14,4 @@ class ItemResponse(BaseModel):
 class ItemPatchRequest(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
+    model_config = ConfigDict(extra="forbid")
