@@ -2,10 +2,12 @@ from typing import List, Optional
 from lecture_2.hw.shop_api.store.models import Cart, CartItem, Item
 from lecture_2.hw.shop_api.api.item.contracts import ItemRequest
 
+
 _cart_data = {}
 _item_data = {}
 _cart_id_counter = 0
 _item_id_counter = 0
+
 
 def create_cart() -> Cart:
     global _cart_id_counter
@@ -14,8 +16,10 @@ def create_cart() -> Cart:
     _cart_data[_cart_id_counter] = cart
     return cart
 
+
 def get_cart(cart_id: int) -> Optional[Cart]:
     return _cart_data.get(cart_id)
+
 
 def get_carts(
     offset: int,
@@ -39,6 +43,7 @@ def get_carts(
 
     return carts[offset:offset + limit]
 
+
 def add_item_to_cart(cart_id: int, item_id: int) -> Optional[Cart]:
     cart = _cart_data.get(cart_id)
     item = _item_data.get(item_id)
@@ -53,6 +58,7 @@ def add_item_to_cart(cart_id: int, item_id: int) -> Optional[Cart]:
     cart.price += item.price
     return cart
 
+
 def create_item(item_request: ItemRequest) -> Item:
     global _item_id_counter
     _item_id_counter += 1
@@ -60,8 +66,10 @@ def create_item(item_request: ItemRequest) -> Item:
     _item_data[_item_id_counter] = item
     return item
 
+
 def get_item(item_id: int) -> Optional[Item]:
     return _item_data.get(item_id)
+
 
 def update_item(item_id: int, item_data: ItemRequest) -> Optional[Item]:
     item = _item_data.get(item_id)
@@ -74,25 +82,22 @@ def update_item(item_id: int, item_data: ItemRequest) -> Optional[Item]:
 
 def patch_item(item_id: int, item_patch_request: ItemRequest) -> Optional[Item]:
     item = _item_data.get(item_id)
-
     if item is None or item.deleted:
         return None
     if item_patch_request.name is not None:
         item.name = item_patch_request.name
     if item_patch_request.price is not None:
         item.price = item_patch_request.price
-
     return item
 
 
-def delete_item(item_id: int) -> dict:
+def delete_item(item_id: int) -> Optional[dict]:
     item = _item_data.get(item_id)
-    if not item:
-        return False
-    if item.deleted:
-        return True
+    if item is None or item.deleted:
+        return None
     item.deleted = True
-    return True
+    return {"deleted": True}
+
 
 def get_items(
     offset: int,

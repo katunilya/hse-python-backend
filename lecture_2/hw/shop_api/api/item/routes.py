@@ -19,11 +19,12 @@ async def get_item_by_id(id: int):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
     return item
 
+
 @router.delete("/{id}", status_code=HTTPStatus.OK)
 async def delete_item(id: int):
     deleted = queries.delete_item(id)
     if not deleted:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or already deleted")
     return {"deleted": True}
 
 @router.put("/{id}", response_model=ItemResponse)
@@ -36,7 +37,6 @@ async def update_item(id: int, item_data: ItemRequest):
 
 @router.patch("/{id}", response_model=ItemResponse)
 async def patch_item(id: int, item_data: ItemRequest):
-    # Если нет ни одного переданного поля, возвращаем ошибку 422
     if item_data.name is None and item_data.price is None:
         raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid request: missing fields")
     updated_item = queries.patch_item(id, item_data)
