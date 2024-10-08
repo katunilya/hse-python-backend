@@ -62,7 +62,7 @@ async def patch_item(id: int, item_patch_request: ItemPatchRequest) -> ItemRespo
 async def delete_item(id: int):
     deleted_item = queries.delete_item(id)
     if deleted_item is None:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or already deleted")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
     return {"deleted": True}
 
 
