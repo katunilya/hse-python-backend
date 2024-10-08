@@ -68,7 +68,10 @@ def create_item(item_request: ItemRequest) -> Item:
 
 
 def get_item(item_id: int) -> Optional[Item]:
-    return _item_data.get(item_id)
+    item = _item_data.get(item_id)
+    if item and item.deleted:
+        return None
+    return item
 
 
 def update_item(item_id: int, item_data: ItemRequest) -> Optional[Item]:

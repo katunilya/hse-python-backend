@@ -18,8 +18,8 @@ async def create_item(item: ItemRequest, response: Response):
 @router.get("/{id}", response_model=ItemResponse)
 async def get_item_by_id(id: int):
     item = queries.get_item(id)
-    if not item:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
+    if not item or item.deleted:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or deleted")
     return item
 
 
