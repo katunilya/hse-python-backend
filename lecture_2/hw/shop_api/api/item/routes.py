@@ -33,11 +33,17 @@ async def update_item(id: int, item_data: ItemRequest):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or deleted")
     return updated_item
 
+
 @router.patch("/{id}", response_model=ItemResponse)
 async def patch_item(id: int, item_data: ItemRequest):
     updated_item = queries.patch_item(id, item_data)
-    if not updated_item:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or deleted")
+
+    if updated_item is None:
+        # Если товар был удален, возвращаем 304 Not Modified
+        item = queries.get_item(id)
+        if item and item.deleted:
+            raise HTTPException(status_code=HTTPStatus.NOT_MODIFIED, detail="Item is deleted")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
     return updated_item
 
 @router.get("/", response_model=List[ItemResponse])
