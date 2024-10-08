@@ -38,3 +38,16 @@ async def patch_item(id: int, item_data: ItemRequest):
     if not updated_item:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or deleted")
     return updated_item
+
+@router.get("/", response_model=List[ItemResponse])
+async def get_item_list(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(10, gt=0),
+    min_price: Optional[float] = Query(None, ge=0),
+    max_price: Optional[float] = Query(None, ge=0),
+    show_deleted: bool = Query(False)
+):
+    items = queries.get_items(offset, limit, min_price, max_price, show_deleted)
+    if not items:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No items found")
+    return items

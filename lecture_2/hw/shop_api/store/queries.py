@@ -90,3 +90,21 @@ def delete_item(item_id: int) -> dict:
         return True
     item.deleted = True
     return True
+
+def get_items(
+    offset: int,
+    limit: int,
+    min_price: Optional[float],
+    max_price: Optional[float],
+    show_deleted: bool,
+) -> List[Item]:
+    items = list(_item_data.values())
+    if not items:
+        return []
+    items = [
+        item for item in items
+        if ((min_price is None) or (item.price >= min_price))
+        and ((max_price is None) or (item.price <= max_price))
+        and (show_deleted or not item.deleted)
+    ]
+    return items[offset:offset + limit]
