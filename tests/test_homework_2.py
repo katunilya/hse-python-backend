@@ -36,7 +36,7 @@ def existing_not_empty_carts(existing_items: list[int]) -> list[int]:
     carts = []
 
     for i in range(20):
-        cart_id: int = client.post("/cart").json()["id"]
+        cart_id = client.post("/cart").json()["id"]
         for item_id in faker.random_elements(existing_items, unique=False, length=i):
             client.post(f"/cart/{cart_id}/add/{item_id}")
 
@@ -85,7 +85,7 @@ def test_post_cart() -> None:
     assert "id" in response.json()
 
 
-@pytest.mark.xfail()
+
 @pytest.mark.parametrize(
     ("cart", "not_empty"),
     [
@@ -116,7 +116,7 @@ def test_get_cart(request, cart: int, not_empty: bool) -> None:
         assert response_json["price"] == 0.0
 
 
-@pytest.mark.xfail()
+
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -142,16 +142,25 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
 
     if status_code == HTTPStatus.OK:
         data = response.json()
+        
 
         assert isinstance(data, list)
 
+        
+        # Проверка минимальной цены для всей корзины
         if "min_price" in query:
-            assert all(item["price"] >= query["min_price"] for item in data)
+            assert all(cart["price"] >= query["min_price"] for cart in data)
 
+        # Проверка максимальной цены для всей корзины
         if "max_price" in query:
-            assert all(item["price"] <= query["max_price"] for item in data)
+            assert all(cart["price"] <= query["max_price"] for cart in data)
 
-        quantity = sum(item["quantity"] for item in data)
+        # Подсчет общего количества доступных товаров в корзине
+        quantity = sum(
+            item["quantity"] 
+            for cart in data 
+            for item in cart["items"] 
+        )
 
         if "min_quantity" in query:
             assert quantity >= query["min_quantity"]
@@ -160,7 +169,7 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
             assert quantity <= query["max_quantity"]
 
 
-@pytest.mark.xfail()
+
 def test_post_item() -> None:
     item = {"name": "test item", "price": 9.99}
     response = client.post("/item", json=item)
@@ -172,7 +181,7 @@ def test_post_item() -> None:
     assert item["name"] == data["name"]
 
 
-@pytest.mark.xfail()
+
 def test_get_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
 
@@ -181,8 +190,6 @@ def test_get_item(existing_item: dict[str, Any]) -> None:
     assert response.status_code == HTTPStatus.OK
     assert response.json() == existing_item
 
-
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -217,7 +224,6 @@ def test_get_item_list(query: dict[str, Any], status_code: int) -> None:
             assert all(item["deleted"] is False for item in data)
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("body", "status_code"),
     [
@@ -242,7 +248,6 @@ def test_put_item(
         assert response.json() == new_item
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("item", "body", "status_code"),
     [
@@ -280,7 +285,6 @@ def test_patch_item(request, item: str, body: dict[str, Any], status_code: int) 
         assert patched_item == patch_response_body
 
 
-@pytest.mark.xfail()
 def test_delete_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
 
