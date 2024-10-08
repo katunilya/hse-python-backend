@@ -16,19 +16,23 @@ def get_cart(cart_id: int):
     if not cart:
         return None
 
-    # Пересчёт цены корзины
+    # Пересчёт цены корзины и учёт только активных товаров
     total_price = 0
     valid_items = []
     for item in cart["items"]:
-        valid_item = get_item(item["id"])
+        valid_item = get_item(item["id"])  # Получаем только активные товары
         if valid_item:
             item_total_price = valid_item["price"] * item["quantity"]
             total_price += item_total_price
-            valid_items.append({"id": valid_item["id"], "name": valid_item["name"], "price": valid_item["price"],
-                                "quantity": item["quantity"]})
+            valid_items.append({
+                "id": valid_item["id"],
+                "name": valid_item["name"],
+                "price": valid_item["price"],
+                "quantity": item["quantity"]
+            })
 
-    cart["price"] = total_price
-    cart["items"] = valid_items
+    cart["price"] = total_price  # Пересчитываем цену корзины
+    cart["items"] = valid_items  # Обновляем список товаров в корзине
     return cart
 
 def add_item(cart_id: int, item_id: int):
@@ -36,14 +40,20 @@ def add_item(cart_id: int, item_id: int):
     item = _data_items.get(item_id)
     if not cart or not item:
         return None
+
     # Проверяем, есть ли уже товар в корзине
     for cart_item in cart["items"]:
         if cart_item["id"] == item_id:
-            cart_item["quantity"] += 1
-            cart["price"] += item["price"]
+            cart_item["quantity"] += 1  # Увеличиваем количество, если товар уже есть
+            cart["price"] += item["price"]  # Увеличиваем цену корзины
             return cart
+
     # Если товара нет, добавляем новый с quantity = 1
-    cart["items"].append({"id": item_id, "quantity": 1, "price": item["price"]})
+    cart["items"].append({
+        "id": item_id,
+        "quantity": 1,  # Новый товар с количеством 1
+        "price": item["price"]
+    })
     cart["price"] += item["price"]
     return cart
 
