@@ -17,12 +17,26 @@ def create_cart() -> Cart:
 def get_cart(cart_id: int) -> Optional[Cart]:
     return _cart_data.get(cart_id)
 
-def get_carts(offset: int, limit: int, min_price: Optional[float], max_price: Optional[float]) -> List[Cart]:
+def get_carts(
+    offset: int,
+    limit: int,
+    min_price: Optional[float],
+    max_price: Optional[float],
+    min_quantity: Optional[int],
+    max_quantity: Optional[int]
+) -> List[Cart]:
     carts = list(_cart_data.values())
+
     if min_price is not None:
         carts = [cart for cart in carts if cart.price >= min_price]
     if max_price is not None:
         carts = [cart for cart in carts if cart.price <= max_price]
+
+    if min_quantity is not None:
+        carts = [cart for cart in carts if sum(item.quantity for item in cart.items) >= min_quantity]
+    if max_quantity is not None:
+        carts = [cart for cart in carts if sum(item.quantity for item in cart.items) <= max_quantity]
+
     return carts[offset:offset + limit]
 
 def add_item_to_cart(cart_id: int, item_id: int) -> Optional[Cart]:
