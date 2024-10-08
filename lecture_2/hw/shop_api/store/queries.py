@@ -93,7 +93,7 @@ def patch_item(item_id: int, item_patch_request: ItemPatchRequest) -> Optional[I
 
 def delete_item(item_id: int) -> Optional[Item]:
     item = _item_data.get(item_id)
-    if item is None:
+    if not item:
         return False
     item.deleted = True
     return item
