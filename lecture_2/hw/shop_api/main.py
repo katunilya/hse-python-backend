@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import FastAPI, APIRouter, HTTPException, Response
 
 # from lecture_2.hw.shop_api.models import Cart, Item, ItemDto, DEFAULT_ITEM_FIELDS, ItemCart
-from models import Cart, Item, ItemDto, DEFAULT_ITEM_FIELDS, ItemCart
+from shop_api.models import Cart, Item, ItemDto, DEFAULT_ITEM_FIELDS, ItemCart
 
 items = []
 carts = []
