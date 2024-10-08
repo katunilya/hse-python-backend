@@ -73,12 +73,10 @@ def update_item(item_id: int, item_data: ItemRequest) -> Optional[Item]:
 
 
 def patch_item(item_id: int, item_patch_request: ItemRequest) -> Optional[Item]:
-    item = get_item(item_id)
+    item = _item_data.get(item_id)
 
     if item is None or item.deleted:
-        return None  # Возвращаем None, если товар удален или не найден
-
-    # Обновляем только те поля, которые переданы в запросе
+        return None
     if item_patch_request.name is not None:
         item.name = item_patch_request.name
     if item_patch_request.price is not None:

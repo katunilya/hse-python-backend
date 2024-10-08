@@ -36,10 +36,11 @@ async def update_item(id: int, item_data: ItemRequest):
 
 @router.patch("/{id}", response_model=ItemResponse)
 async def patch_item(id: int, item_data: ItemRequest):
+    # Если нет ни одного переданного поля, возвращаем ошибку 422
+    if item_data.name is None and item_data.price is None:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid request: missing fields")
     updated_item = queries.patch_item(id, item_data)
-
     if updated_item is None:
-        # Если товар был удален, возвращаем 304 Not Modified
         item = queries.get_item(id)
         if item and item.deleted:
             raise HTTPException(status_code=HTTPStatus.NOT_MODIFIED, detail="Item is deleted")
