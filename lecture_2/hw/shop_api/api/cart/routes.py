@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Response
 from http import HTTPStatus
 from lecture_2.hw.shop_api.store import queries
 from lecture_2.hw.shop_api.api.cart.contracts import CartResponse
+from fastapi import Query
 
 router = APIRouter(prefix="/cart")
 
@@ -22,11 +23,18 @@ async def get_cart(cart_id: int):
 
 
 @router.get("/", response_model=list)
-async def get_cart_list(min_price: float = None, max_price: float = None, offset: int = 0, limit: int = 10):
+async def get_cart_list(
+    min_price: float = Query(None, ge=0),
+    max_price: float = Query(None, ge=0),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(10, gt=0),
+    min_quantity: int = Query(None, ge=0),
+    max_quantity: int = Query(None, ge=0)
+):
     if offset < 0 or limit <= 0:
         raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid pagination")
 
-    carts = queries.get_carts(offset, limit, min_price, max_price)
+    carts = queries.get_carts(offset, limit, min_price, max_price, min_quantity, max_quantity)
     return carts
 
 
