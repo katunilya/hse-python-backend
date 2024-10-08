@@ -43,4 +43,52 @@ async def test_not_found(method: str, path: str):
 async def test_factorial(query: dict[str, Any], status_code: int):
     async with TestClient(app) as client:
         # Форматируем строку запроса с параметрами
-        query_string = "&".join(f"{
+        query_string = "&".join(f"{key}={value}" for key, value in query.items())
+        url = f"/factorial?{query_string}" if query_string else "/factorial"
+        
+        response = await client.get(url)
+
+    assert response.status_code == status_code
+    if status_code == HTTPStatus.OK:
+        assert "result" in response.json()
+    
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("params", "status_code"),
+    [
+        ("/lol", HTTPStatus.UNPROCESSABLE_ENTITY),
+        ("/-1", HTTPStatus.BAD_REQUEST),
+        ("/0", HTTPStatus.OK),
+        ("/1", HTTPStatus.OK),
+        ("/10", HTTPStatus.OK),
+    ],
+)
+async def test_fibonacci(params: str, status_code: int):
+    async with TestClient(app) as client:
+        # Добавлено await для вызова
+        response = await client.get("/fibonacci" + params)
+
+    assert response.status_code == status_code
+    if status_code == HTTPStatus.OK:
+        assert "result" in response.json()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("json", "status_code"),
+    [
+        (None, HTTPStatus.UNPROCESSABLE_ENTITY),
+        ([], HTTPStatus.BAD_REQUEST),
+        ([1, 2, 3], HTTPStatus.OK),
+        ([1, 2.0, 3.0], HTTPStatus.OK),
+        ([1.0, 2.0, 3.0], HTTPStatus.OK),
+    ],
+)
+async def test_mean(json: Any, status_code: int):
+    async with TestClient(app) as client:
+        response = await client.get("/mean", json=json)
+
+    assert response.status_code == status_code
+    if status_code == HTTPStatus.OK:
+        assert "result" in response.json()
