@@ -15,7 +15,7 @@ async def get_cart_list(min_price: float = None, max_price: float = None, offset
     if offset < 0 or limit <= 0:
         raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid pagination parameters")
 
-    filtered_carts = list(_data_carts.values())
+    filtered_carts = queries.get_carts()  # Используем запрос через queries
 
     if min_price is not None:
         filtered_carts = [cart for cart in filtered_carts if cart["price"] >= min_price]

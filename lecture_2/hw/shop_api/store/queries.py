@@ -10,8 +10,26 @@ def create_cart():
     _data_carts[_cart_id_counter] = cart
     return cart
 
+
 def get_cart(cart_id: int):
-    return _data_carts.get(cart_id)
+    cart = _data_carts.get(cart_id)
+    if not cart:
+        return None
+
+    # Пересчёт цены корзины
+    total_price = 0
+    valid_items = []
+    for item in cart["items"]:
+        valid_item = get_item(item["id"])
+        if valid_item:
+            item_total_price = valid_item["price"] * item["quantity"]
+            total_price += item_total_price
+            valid_items.append({"id": valid_item["id"], "name": valid_item["name"], "price": valid_item["price"],
+                                "quantity": item["quantity"]})
+
+    cart["price"] = total_price
+    cart["items"] = valid_items
+    return cart
 
 def add_item(cart_id: int, item_id: int):
     cart = _data_carts.get(cart_id)
