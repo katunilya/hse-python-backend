@@ -20,13 +20,6 @@ async def get_item_by_id(id: int):
     return item
 
 
-@router.delete("/{id}", status_code=HTTPStatus.OK)
-async def delete_item(id: int):
-    deleted = queries.delete_item(id)
-    if not deleted:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or already deleted")
-    return {"deleted": True}
-
 @router.put("/{id}", response_model=ItemResponse)
 async def update_item(id: int, item_data: ItemRequest):
     updated_item = queries.update_item(id, item_data)
@@ -46,6 +39,14 @@ async def patch_item(id: int, item_data: ItemRequest):
             raise HTTPException(status_code=HTTPStatus.NOT_MODIFIED, detail="Item is deleted")
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
     return updated_item
+
+
+@router.delete("/{id}", status_code=HTTPStatus.OK)
+async def delete_item(id: int):
+    deleted = queries.delete_item(id)
+    if not deleted:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or already deleted")
+    return {"deleted": True}
 
 @router.get("/", response_model=List[ItemResponse])
 async def get_item_list(
