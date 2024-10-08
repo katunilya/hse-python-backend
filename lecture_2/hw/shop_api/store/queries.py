@@ -16,11 +16,19 @@ def get_cart(cart_id: int):
     if not cart:
         return None
 
-    # Пересчёт цены корзины и учёт только активных товаров
+    # Если корзина пуста, возвращаем её с нулевой ценой и пустыми товарами
+    if not cart["items"]:
+        return {
+            "id": cart["id"],
+            "items": [],
+            "price": 0.0
+        }
+
+    # Пересчитываем цену для корзины с товарами
     total_price = 0
     valid_items = []
     for item in cart["items"]:
-        valid_item = get_item(item["id"])  # Получаем только активные товары
+        valid_item = get_item(item["id"])
         if valid_item:
             item_total_price = valid_item["price"] * item["quantity"]
             total_price += item_total_price
@@ -31,9 +39,11 @@ def get_cart(cart_id: int):
                 "quantity": item["quantity"]
             })
 
-    cart["price"] = total_price  # Пересчитываем цену корзины
-    cart["items"] = valid_items  # Обновляем список товаров в корзине
-    return cart
+    return {
+        "id": cart["id"],
+        "items": valid_items,
+        "price": total_price
+    }
 
 def add_item(cart_id: int, item_id: int):
     cart = _data_carts.get(cart_id)
