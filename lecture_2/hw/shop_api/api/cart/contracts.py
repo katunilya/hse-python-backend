@@ -1,17 +1,23 @@
 from pydantic import BaseModel
+from typing import List
 
-class CartRequest(BaseModel):
-    pass  # Тут можно добавить поля по необходимости
+# Модель для отдельного товара в корзине
+class CartItem(BaseModel):
+    id: int
+    name: str
+    quantity: int
+    available: bool
 
+# Модель ответа на запрос корзины
 class CartResponse(BaseModel):
     id: int
-    items: list
+    items: List[CartItem]  # Список объектов CartItem
     price: float
 
     @staticmethod
     def from_entity(entity):
         return CartResponse(
             id=entity["id"],
-            items=entity["items"],
+            items=[CartItem(**item) for item in entity["items"]],
             price=entity["price"]
         )
