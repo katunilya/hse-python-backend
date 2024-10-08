@@ -49,6 +49,4 @@ async def get_item_list(
     show_deleted: bool = Query(False)
 ):
     items = queries.get_items(offset, limit, min_price, max_price, show_deleted)
-    if not items:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="No items found")
     return items
