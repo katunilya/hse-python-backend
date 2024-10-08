@@ -37,7 +37,10 @@ def create_item(item_data: dict):
     return item
 
 def get_item(item_id: int):
-    return _data_items.get(item_id)
+    item = _data_items.get(item_id)
+    if item and not item["deleted"]:
+        return item
+    return None
 
 def delete_item(item_id: int):
     item = _data_items.get(item_id)
