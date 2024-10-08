@@ -9,3 +9,7 @@ class ItemResponse(BaseModel):
     name: str
     price: float
     deleted: bool
+
+class ItemPatchRequest(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None

@@ -1,6 +1,6 @@
 from typing import List, Optional
 from lecture_2.hw.shop_api.store.models import Cart, CartItem, Item
-from lecture_2.hw.shop_api.api.item.contracts import ItemRequest
+from lecture_2.hw.shop_api.api.item.contracts import ItemRequest, ItemPatchRequest
 
 
 _cart_data = {}
