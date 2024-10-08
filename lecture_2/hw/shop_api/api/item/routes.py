@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 from http import HTTPStatus
+from typing import List, Optional
 from lecture_2.hw.shop_api.store import queries
 from lecture_2.hw.shop_api.api.item.contracts import ItemResponse, ItemRequest
 
