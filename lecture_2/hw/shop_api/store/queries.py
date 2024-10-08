@@ -80,25 +80,23 @@ def update_item(item_id: int, item_data: ItemRequest) -> Optional[Item]:
     return item
 
 
-def patch_item(item_id: int, item_data: dict):
-    item = _item_data.get(item_id)
-    if not item or item.deleted:
+def patch_item(item_id: int, item_patch_request: ItemPatchRequest) -> Optional[Item]:
+    item = get_item(item_id)
+    if item is None or item.deleted:
         return None
-    if 'name' not in item_data and 'price' not in item_data:
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid data")
-    if 'name' in item_data:
-        item.name = item_data['name']
-    if 'price' in item_data:
-        item.price = item_data['price']
+    if item_patch_request.name is not None:
+        item.name = item_patch_request.name
+    if item_patch_request.price is not None:
+        item.price = item_patch_request.price
     return item
 
 
-def delete_item(item_id: int):
+def delete_item(item_id: int) -> Optional[Item]:
     item = _item_data.get(item_id)
-    if not item or item.deleted:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
+    if item is None or item.deleted:
+        return None
     item.deleted = True
-    return {"deleted": True}
+    return item
 
 
 def get_items(

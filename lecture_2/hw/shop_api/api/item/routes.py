@@ -4,13 +4,16 @@ from typing import List, Optional
 from lecture_2.hw.shop_api.store import queries
 from lecture_2.hw.shop_api.api.item.contracts import ItemResponse, ItemRequest
 
+
 router = APIRouter(prefix="/item")
+
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ItemResponse)
 async def create_item(item: ItemRequest, response: Response):
     item_entity = queries.create_item(item)
     response.headers["location"] = f"/item/{item_entity.id}"
     return item_entity
+
 
 @router.get("/{id}", response_model=ItemResponse)
 async def get_item_by_id(id: int):
@@ -28,25 +31,40 @@ async def update_item(id: int, item_data: ItemRequest):
     return updated_item
 
 
-@router.patch("/{id}", response_model=ItemResponse)
-async def patch_item(id: int, item_data: ItemRequest):
-    if item_data.name is None and item_data.price is None:
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid request: missing fields")
-    updated_item = queries.patch_item(id, item_data)
-    if updated_item is None:
-        item = queries.get_item(id)
-        if item and item.deleted:
-            raise HTTPException(status_code=HTTPStatus.NOT_MODIFIED, detail="Item is deleted")
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
-    return updated_item
+@router.patch(
+    "/{id}",
+    responses={
+        HTTPStatus.OK: {"description": "Successfully modified data of item"},
+        HTTPStatus.NOT_FOUND: {"description": "Item not found"},
+        HTTPStatus.NOT_MODIFIED: {"description": "Item is deleted or cannot be modified"},
+    },
+    status_code=HTTPStatus.OK,
+    response_model=ItemResponse,
+)
+async def patch_item(id: int, item_patch_request: ItemPatchRequest) -> ItemResponse:
+    try:
+        patched_item = queries.patch_item(id, item_patch_request)
+        if patched_item is None:
+            raise HTTPException(status_code=HTTPStatus.NOT_MODIFIED, detail="Item not found or deleted")
+    except Exception as e:
+        raise HTTPException(status_code=HTTPStatus.NOT_MODIFIED, detail=str(e))
+    return patched_item
 
 
-@router.delete("/{id}", status_code=HTTPStatus.OK)
+@router.delete(
+    "/{id}",
+    responses={
+        HTTPStatus.OK: {"description": "Successfully deleted item"},
+        HTTPStatus.NOT_FOUND: {"description": "Item not found"},
+    },
+    status_code=HTTPStatus.OK,
+)
 async def delete_item(id: int):
-    deleted = queries.delete_item(id)
-    if not deleted:
+    deleted_item = queries.delete_item(id)
+    if deleted_item is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found or already deleted")
     return {"deleted": True}
+
 
 @router.get("/", response_model=List[ItemResponse])
 async def get_item_list(
