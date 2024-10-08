@@ -71,8 +71,8 @@ def patch_item(item_id: int, item_data: ItemRequest) -> Optional[Item]:
 def delete_item(item_id: int) -> dict:
     item = _item_data.get(item_id)
     if not item:
-        return {"deleted": False}
+        return False
     if item.deleted:
-        return {"deleted": True}
+        return True
     item.deleted = True
-    return {"deleted": True}
+    return True

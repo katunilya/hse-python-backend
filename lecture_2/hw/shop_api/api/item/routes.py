@@ -21,7 +21,7 @@ async def get_item_by_id(id: int):
 @router.delete("/{id}", status_code=HTTPStatus.OK)
 async def delete_item(id: int):
     deleted = queries.delete_item(id)
-    if not deleted["deleted"]:
+    if not deleted:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
     return {"deleted": True}
 
