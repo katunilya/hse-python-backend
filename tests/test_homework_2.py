@@ -155,12 +155,7 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
         if "max_price" in query:
             assert all(cart["price"] <= query["max_price"] for cart in data)
 
-        # Подсчет общего количества доступных товаров в корзине
-        quantity = sum(
-            item["quantity"] 
-            for cart in data 
-            for item in cart["items"] 
-        )
+        quantity = sum(item["quantity"] for item in data)
 
         if "min_quantity" in query:
             assert quantity >= query["min_quantity"]
