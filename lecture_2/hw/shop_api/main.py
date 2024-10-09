@@ -33,7 +33,6 @@ def create_cart():
     )
 
 
-# Получение информации о корзине
 @app.get("/cart/{cart_id}", response_model=dict)
 def get_cart(cart_id: int):
     cart = carts.get(cart_id)
@@ -110,7 +109,7 @@ def add_item_to_cart(cart_id: int, item_id: int):
                              available=not item.deleted)
         cart.items.append(cart_item)
 
-    cart.price = sum(cart_item.quantity * items[cart_item.item_id].price for cart_item in cart.items)  # пересчитываем цену корзины
+    cart.price = sum(cart_item.quantity * items[cart_item.item_id].price for cart_item in cart.items)
     return {"message": "Item added to cart"}
 
 
@@ -145,10 +144,16 @@ def get_item(id: int):
 def list_items(offset: int = 0, limit: int = 10, show_deleted: bool = False, min_price: float = None,
                max_price: float = None):
 
+    if limit <= 0:
+        raise HTTPException(status_code=422, detail="Limit must be more than 0")
+
     if min_price is not None and min_price < 0:
         raise HTTPException(status_code=422, detail="min_price must be non-negative")
     if max_price is not None and max_price < 0:
         raise HTTPException(status_code=422, detail="max_price must be non-negative")
+
+    if offset < 0:
+        raise HTTPException(status_code=422, detail="offset must be more than 0")
 
     filtered_items = [item for item in items.values() if show_deleted or not item.deleted]
 
