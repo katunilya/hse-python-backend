@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Query
-from repository import items_db, last_item_id
-from schemas import Item, ItemCreate, ItemPut, ItemUpdate
+import http
+
+from fastapi import APIRouter, Query, HTTPException
+from ..repository import items_db, last_item_id
+from ..schemas import Item, ItemCreate, ItemPut, ItemUpdate
 from typing import Optional, List
 
 router = APIRouter(prefix="/item")
 
 
-@router.post("/")
+@router.post("/", status_code=http.HTTPStatus.CREATED)
 async def create_item(item: ItemCreate) -> Item:
     global last_item_id
     last_item_id += 1
@@ -16,14 +18,17 @@ async def create_item(item: ItemCreate) -> Item:
 
 @router.get("/{item_id}")
 async def get_item(item_id: int):
+    item = items_db.get(item_id)
+    if item is None or item.deleted is True:
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Item not found")
     return items_db[item_id]
 
 
 @router.get("/")
 async def get_items(offset: int = Query(0, ge=0),
                    limit: int = Query(10, gt=0),
-                   min_price: Optional[float] = None,
-                   max_price: Optional[float] = None,
+                   min_price: Optional[float] = Query(None, gt=0),
+                   max_price: Optional[float] = Query(None, gt=0),
                    show_deleted: Optional[bool] = False
                    ):
     filtered_items: List[Item] = list(filter(lambda item: (
@@ -44,12 +49,19 @@ async def put_item(item_id: int, item: ItemPut):
 
 @router.patch("/{item_id}")
 async def patch_item(item_id: int, item: ItemUpdate):
-    items_db[item_id] = Item(id=item_id, name=item.name, price=item.price, deleted=items_db[item_id].deleted)
-    return items_db[item_id]
+    item = items_db.get(item_id)
+    if item and not item.deleted:
+        items_db[item_id] = Item(id=item_id, name=item.name, price=item.price, deleted=items_db[item_id].deleted)
+        return items_db[item_id]
+    else:
+        raise HTTPException(status_code=http.HTTPStatus.NOT_MODIFIED, detail="Item not modified")
 
 
 @router.delete("/{item_id}")
 async def delete_item(item_id: int):
+    item = items_db.get(item_id)
+    if not item:
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Item not found")
     items_db[item_id] = Item(id=item_id, name=items_db[item_id].name, price=items_db[item_id].price, deleted=True)
     return items_db[item_id]
 

@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Query
-from repository import carts_db, items_db, last_cart_id
-from schemas import Cart, CartItem
+from fastapi import APIRouter, Query, Response, HTTPException
+from ..repository import carts_db, items_db, last_cart_id
+from ..schemas import Cart, CartItem
 from typing import Optional, List
+import http
 
 router = APIRouter(prefix="/cart")
 
 
-@router.post("/")
-async def create_cart() -> Cart:
+@router.post("/", status_code=http.HTTPStatus.CREATED)
+async def create_cart(response: Response) -> Cart:
     global last_cart_id
     last_cart_id += 1
     carts_db[last_cart_id] = Cart(id=last_cart_id, items=[])
+    response.headers["Location"] = f"/cart/{last_cart_id}"
     return carts_db[last_cart_id]
 
 
@@ -26,7 +28,7 @@ def get_cart_items(cart_id: int, need_all: bool = False) -> List[CartItem]:
     for item in carts_db[cart_id].items:
         if items_db[item.id].deleted:
             item.available = False
-        if not items_db[item.id].deleted and not need_all:
+        if not items_db[item.id].deleted:
             item_list.append(item)
         elif need_all:
             item_list.append(item)
@@ -35,7 +37,7 @@ def get_cart_items(cart_id: int, need_all: bool = False) -> List[CartItem]:
 
 def get_quantity_cart(cart_id: int) -> int:
     quantity = 0
-    items = get_cart_items(cart_id)
+    items = get_cart_items(cart_id) # допустим need_all=True
     for item in items:
         quantity += item.quantity
     return quantity
@@ -43,16 +45,18 @@ def get_quantity_cart(cart_id: int) -> int:
 
 def get_price_cart(cart_id: int) -> float:
     price = 0
-    items = get_cart_items(cart_id)
+    items = get_cart_items(cart_id) # допустим need_all=True
     for item in items:
         price += items_db[item.id].price * item.quantity
     return price
 
 
-@router.post("/cart/{cart_id}/add/{item_id}")
+@router.post("/{cart_id}/add/{item_id}")
 async def post_cart_and_item(cart_id: int, item_id: int) -> Cart:
-    cart = carts_db[cart_id]
-    item = items_db[item_id]
+    item = items_db.get(item_id)
+    cart = carts_db.get(cart_id)
+    if (item is None or item.deleted is True) or (cart is None):
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Item not found")
 
     items_ids = [it.id for it in get_cart_items(cart_id, need_all=True)]
     if item_id not in items_ids:
@@ -61,16 +65,9 @@ async def post_cart_and_item(cart_id: int, item_id: int) -> Cart:
         cart.items[items_ids.index(item_id)].quantity += 1
 
     price = get_price_cart(cart_id)
-    return Cart(id=cart_id, items=get_cart_items(cart_id), price=price)
-
-
-# GET /cart - получение списка корзин с query-параметрами
-# offset - неотрицательное целое число, смещение по списку (опционально, по-умолчанию 0)
-# limit - положительное целое число, ограничение на количество (опционально, по-умолчанию 10)
-# min_price - число с плавающей запятой, минимальная цена включительно (опционально, если нет, не учитывает в фильтре)
-# max_price - число с плавающей запятой, максимальная цена включительно (опционально, если нет, не учитывает в фильтре)
-# min_quantity - неотрицательное целое число, минимальное общее число товаров включительно (опционально, если нет, не учитывается в фильтре)
-# max_quantity - неотрицательное целое число, максимальное общее число товаров включительно (опционально, если нет, не учитывается в фильтре)
+    items = get_cart_items(cart_id, need_all=True)
+    print(items)
+    return Cart(id=cart_id, items=items, price=price)
 
 @router.get("/")
 async def get_carts(offset: int = Query(0, ge=0),
@@ -78,7 +75,7 @@ async def get_carts(offset: int = Query(0, ge=0),
                     min_price: Optional[float] = Query(None, gt=0),
                     max_price: Optional[float] = Query(None, gt=0),
                     min_quantity: Optional[int] = Query(None, gt=0),
-                    max_quantity: Optional[int] = Query(None, gt=0),
+                    max_quantity: Optional[int] = Query(None, ge=0),
                     ):
     filtered_carts: List[Cart] = list(filter(lambda cart: (
             (min_price is None or get_price_cart(cart.id) >= min_price) and
