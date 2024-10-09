@@ -60,11 +60,10 @@ async def patch_item(id: int, item_patch_request: ItemPatchRequest) -> ItemRespo
     status_code=HTTPStatus.OK,
 )
 async def delete_item(id: int):
-    try:
-        item = queries.delete_item(id)
-    except Exception as e:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=str(e))
-    return item
+    deleted_item = queries.delete_item(id)
+    if not deleted_item:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
+    return {"deleted": True}
 
 
 @router.get("/", response_model=List[ItemResponse])
