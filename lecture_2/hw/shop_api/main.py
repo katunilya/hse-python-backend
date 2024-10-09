@@ -104,16 +104,25 @@ def list_items(
     max_price: Optional[float] = None,
     show_deleted: bool = False
 ):
-    validate_offset_limit(offset, limit)
+    filtered_items = []
+    if offset < 0:
+        raise HTTPException(detail="Offset should be positive", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if limit <= 0:
+        raise HTTPException(detail="Limit should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(min_price is None) and min_price < 0:
+        raise HTTPException(detail="min_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(max_price is None) and max_price < 0:
+        raise HTTPException(detail="max_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
 
-    filtered_items = [
-        item for item in items
-        if (show_deleted or not item.deleted)
-        and (min_price is None or item.price >= min_price)
-        and (max_price is None or item.price <= max_price)
-    ]
-    
-    return filtered_items[offset:offset + limit]
+    for i in range(offset, len(items)):
+        if len(filtered_items) == limit:
+            break
+        item = items[i]
+        if (show_deleted or not item.deleted) and (min_price is None or item.price >= min_price) and \
+                (max_price is None or item.price <= max_price):
+            filtered_items.append(item)
+
+    return filtered_items
 
 @app.get("/cart", response_model=List[Cart])
 def list_cart(
