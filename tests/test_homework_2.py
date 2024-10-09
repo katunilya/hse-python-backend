@@ -75,8 +75,6 @@ def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
     existing_item["deleted"] = True
     return existing_item
 
-
-@pytest.mark.xfail()
 def test_post_cart() -> None:
     response = client.post("/cart")
 
@@ -155,7 +153,7 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
         if "max_price" in query:
             assert all(cart["price"] <= query["max_price"] for cart in data)
 
-        quantity = sum(item["quantity"] for item in data)
+        quantity = sum(item["quantity"] for cart in data for item in cart['items'])
 
         if "min_quantity" in query:
             assert quantity >= query["min_quantity"]

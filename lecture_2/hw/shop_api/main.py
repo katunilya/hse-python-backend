@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from uuid import uuid4
@@ -121,12 +122,12 @@ async def delete_item(id: int):
     raise HTTPException(status_code=404, detail="Item not found.")
 
 # Создание новой корзины
-@app.post("/cart", response_model=dict)  # POST /cart
+@app.post("/cart", response_model=dict, status_code=200)  # POST /cart
 async def create_cart():
     cart_id = len(carts_db) + 1
     new_cart = Cart(id=cart_id)
     carts_db.append(new_cart)
-    return {"id": cart_id} 
+    return JSONResponse(content={"id": cart_id}, headers={"Location": f"/cart/{cart_id}"},status_code=201)
 
 # Получение корзины по id
 @app.get("/cart/{id}", response_model=Cart)
