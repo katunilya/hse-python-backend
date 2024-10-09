@@ -122,17 +122,32 @@ def list_cart(
     min_quantity: Optional[int] = None,
     max_quantity: Optional[int] = None
 ):
-    validate_offset_limit(offset, limit)
+    filtered_carts = []
+    if offset < 0:
+        raise HTTPException(detail="Offset should be positive", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if limit <= 0:
+        raise HTTPException(detail="Limit should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(min_price is None) and min_price < 0:
+        raise HTTPException(detail="min_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(max_price is None) and max_price < 0:
+        raise HTTPException(detail="max_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(min_quantity is None) and min_quantity < 0:
+        raise HTTPException(detail="min_quantity should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(max_quantity is None) and max_quantity < 0:
+        raise HTTPException(detail="max_quantity should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
 
-    filtered_carts = [
-        cart for cart in carts
-        if (min_price is None or cart.price >= min_price)
-        and (max_price is None or cart.price <= max_price)
-        and (min_quantity is None or sum(item.quantity for item in cart.items) >= min_quantity)
-        and (max_quantity is None or sum(item.quantity for item in cart.items) <= max_quantity)
-    ]
-    
-    return filtered_carts[offset:offset + limit]
+    for i in range(offset, len(carts)):
+        if len(filtered_carts) == limit:
+            break
+        cart = carts[i]
+        if (min_price is None or cart.price >= min_price) and \
+            (max_price is None or cart.price <= max_price) and \
+            (min_quantity is None or sum(item.quantity for item in cart.items) >= min_quantity) and \
+            (max_quantity is None or sum(item.quantity for item in cart.items) <= max_quantity):
+                filtered_carts.append(cart)
+
+
+    return filtered_carts
 
 @app.post("/cart/{cart_id}/add/{item_id}", response_model=Cart)
 def add_item_to_cart(cart_id: int, item_id: int):
