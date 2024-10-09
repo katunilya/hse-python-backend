@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from typing import List, Optional
+
 from fastapi import FastAPI, HTTPException, Response
+
 from lecture_2.hw.shop_api.models import Cart, Item, ItemDto, DEFAULT_ITEM_DTO_FIELDS, ItemCart
 
 app = FastAPI(title="Shop API")
@@ -102,16 +104,25 @@ def list_items(
     max_price: Optional[float] = None,
     show_deleted: bool = False
 ):
-    validate_offset_limit(offset, limit)
+    filtered_items = []
+    if offset < 0:
+        raise HTTPException(detail="Offset should be positive", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if limit <= 0:
+        raise HTTPException(detail="Limit should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(min_price is None) and min_price < 0:
+        raise HTTPException(detail="min_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(max_price is None) and max_price < 0:
+        raise HTTPException(detail="max_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
 
-    filtered_items = [
-        item for item in items
-        if (show_deleted or not item.deleted)
-        and (min_price is None or item.price >= min_price)
-        and (max_price is None or item.price <= max_price)
-    ]
-    
-    return filtered_items[offset:offset + limit]
+    for i in range(offset, len(items)):
+        if len(filtered_items) == limit:
+            break
+        item = items[i]
+        if (show_deleted or not item.deleted) and (min_price is None or item.price >= min_price) and \
+                (max_price is None or item.price <= max_price):
+            filtered_items.append(item)
+
+    return filtered_items
 
 @app.get("/cart", response_model=List[Cart])
 def list_cart(
@@ -121,17 +132,32 @@ def list_cart(
     min_quantity: Optional[int] = None,
     max_quantity: Optional[int] = None
 ):
-    validate_offset_limit(offset, limit)
+    filtered_carts = []
+    if offset < 0:
+        raise HTTPException(detail="Offset should be positive", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if limit <= 0:
+        raise HTTPException(detail="Limit should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(min_price is None) and min_price < 0:
+        raise HTTPException(detail="min_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(max_price is None) and max_price < 0:
+        raise HTTPException(detail="max_price should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(min_quantity is None) and min_quantity < 0:
+        raise HTTPException(detail="min_quantity should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
+    if not(max_quantity is None) and max_quantity < 0:
+        raise HTTPException(detail="max_quantity should be more than 0", status_code=HTTPStatus.UNPROCESSABLE_ENTITY)
 
-    filtered_carts = [
-        cart for cart in carts
-        if (min_price is None or cart.price >= min_price)
-        and (max_price is None or cart.price <= max_price)
-        and (min_quantity is None or sum(item.quantity for item in cart.items) >= min_quantity)
-        and (max_quantity is None or sum(item.quantity for item in cart.items) <= max_quantity)
-    ]
-    
-    return filtered_carts[offset:offset + limit]
+    for i in range(offset, len(carts)):
+        if len(filtered_carts) == limit:
+            break
+        cart = carts[i]
+        if (min_price is None or cart.price >= min_price) and \
+            (max_price is None or cart.price <= max_price) and \
+            (min_quantity is None or sum(item.quantity for item in cart.items) >= min_quantity) and \
+            (max_quantity is None or sum(item.quantity for item in cart.items) <= max_quantity):
+                filtered_carts.append(cart)
+
+
+    return filtered_carts
 
 @app.post("/cart/{cart_id}/add/{item_id}", response_model=Cart)
 def add_item_to_cart(cart_id: int, item_id: int):
