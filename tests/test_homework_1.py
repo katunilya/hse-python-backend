@@ -42,20 +42,16 @@ async def test_not_found(method: str, path: str):
 )
 async def test_factorial(query: dict[str, Any], status_code: int):
     async with TestClient(app) as client:
-<<<<<<< HEAD
         # Форматируем строку запроса с параметрами
         query_string = "&".join(f"{key}={value}" for key, value in query.items())
         url = f"/factorial?{query_string}" if query_string else "/factorial"
         
         response = await client.get(url)
-=======
-        response = await client.get("/factorial", query_string=query)
->>>>>>> origin/main
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
         assert "result" in response.json()
-
+    
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -70,10 +66,7 @@ async def test_factorial(query: dict[str, Any], status_code: int):
 )
 async def test_fibonacci(params: str, status_code: int):
     async with TestClient(app) as client:
-<<<<<<< HEAD
         # Добавлено await для вызова
-=======
->>>>>>> origin/main
         response = await client.get("/fibonacci" + params)
 
     assert response.status_code == status_code
