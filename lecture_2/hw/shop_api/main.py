@@ -8,11 +8,9 @@ from pydantic import BaseModel, conint, condecimal
 
 app = FastAPI(title="Shop API")
 
-# Хранилище данных
 carts = {}
 items = {}
 
-# Счётчики для ID
 item_id_counter = 1
 cart_id_counter = 1
 
@@ -25,7 +23,7 @@ class CreateItemRequest(BaseModel):
 @app.post("/cart", response_model=dict, status_code=status.HTTP_201_CREATED)
 def create_cart():
     global cart_id_counter
-    cart = Cart(id=cart_id_counter, price=0)  # добавляем поле price
+    cart = Cart(id=cart_id_counter, price=0)
     carts[cart_id_counter] = cart
     cart_id_counter += 1
     return JSONResponse(
@@ -35,13 +33,13 @@ def create_cart():
     )
 
 
+# Получение информации о корзине
 @app.get("/cart/{cart_id}", response_model=dict)
 def get_cart(cart_id: int):
     cart = carts.get(cart_id)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
 
-    # Обновляем логику расчёта цены
     cart_price = sum(cart_item.quantity * items[cart_item.item_id].price for cart_item in cart.items)
 
     return {
@@ -55,7 +53,7 @@ def get_cart(cart_id: int):
             }
             for cart_item in cart.items
         ],
-        "price": cart_price  # возвращаем правильную цену корзины
+        "price": cart_price
     }
 
 
@@ -69,18 +67,25 @@ def list_carts(
         max_quantity: conint(ge=0) = None
 ):
 
-    if min_price is not None and min_price < 0:
-        raise HTTPException(status_code=422, detail="min_price must be non-negative")
-    if max_price is not None and max_price < 0:
-        raise HTTPException(status_code=422, detail="max_price must be non-negative")
-
     filtered_carts = list(carts.values())
 
-    # Фильтрация корзин
+    # Фильтрация по цене
     if min_price is not None:
         filtered_carts = [cart for cart in filtered_carts if cart.price >= min_price]
     if max_price is not None:
         filtered_carts = [cart for cart in filtered_carts if cart.price <= max_price]
+
+    # Фильтрация по количеству товаров в корзинах
+    if min_quantity is not None:
+        filtered_carts = [
+            cart for cart in filtered_carts
+            if sum(cart_item.quantity for cart_item in cart.items) >= min_quantity
+        ]
+    if max_quantity is not None:
+        filtered_carts = [
+            cart for cart in filtered_carts
+            if sum(cart_item.quantity for cart_item in cart.items) <= max_quantity
+        ]
 
     # Преобразование объектов в словари
     return [cart.dict() for cart in filtered_carts[offset:offset + limit]]
@@ -139,6 +144,7 @@ def get_item(id: int):
 @app.get("/item", response_model=List[dict])
 def list_items(offset: int = 0, limit: int = 10, show_deleted: bool = False, min_price: float = None,
                max_price: float = None):
+
     if min_price is not None and min_price < 0:
         raise HTTPException(status_code=422, detail="min_price must be non-negative")
     if max_price is not None and max_price < 0:
@@ -146,11 +152,9 @@ def list_items(offset: int = 0, limit: int = 10, show_deleted: bool = False, min
 
     filtered_items = [item for item in items.values() if show_deleted or not item.deleted]
 
-    # Фильтрация по минимальной цене
     if min_price is not None:
         filtered_items = [item for item in filtered_items if item.price >= min_price]
 
-    # Фильтрация по максимальной цене
     if max_price is not None:
         filtered_items = [item for item in filtered_items if item.price <= max_price]
 
@@ -194,15 +198,12 @@ def partial_update_item(id: int, item_data: dict):
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    # Если элемент помечен как удалённый, возвращаем статус 304 и пустое тело
     if item.deleted:
         return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED, content={})
 
-    # Проверка на наличие поля "deleted" в запросе
     if "deleted" in item_data:
         raise HTTPException(status_code=422, detail="Field 'deleted' cannot be updated")
 
-    # Проверка на наличие неизвестных полей в item_data
     allowed_fields = {"name", "price"}
     if any(field not in allowed_fields for field in item_data):
         raise HTTPException(status_code=422, detail="Unknown field in update request")
