@@ -18,7 +18,7 @@ async def app(
     if method != 'GET':
         return await send_response(send, 404, {"error": 404})
 
-    # Обработка запроса на вычисление факториала через строку запроса
+    # Обработка запроса на вычисление факториала
     if path == '/factorial':
         query_string = scope['query_string'].decode()
         params = dict(q.split('=') for q in query_string.split('&') if '=' in q)
@@ -37,10 +37,10 @@ async def app(
         except ValueError:
             return await send_response(send, 422, {"error": 422})
 
-    # Обработка запроса на вычисление числа Фибоначчи через параметр пути
+    # Обработка запроса на вычисление числа Фибоначчи
     elif path.startswith('/fibonacci'):
         try:
-            n_str = path.split('/')[2]  # Получаем параметр пути
+            n_str = path.split('/')[2]
             n = int(n_str)
 
             if n < 0:
@@ -52,7 +52,7 @@ async def app(
         except (IndexError, ValueError):
             return await send_response(send, 422, {"error": 422})
 
-    # Обработка запроса на вычисление среднего арифметического через тело запроса (JSON)
+    # Обработка запроса на вычисление среднего арифметического
     elif path == '/mean':
         body = await receive()
         if 'body' not in body or not body['body']:
