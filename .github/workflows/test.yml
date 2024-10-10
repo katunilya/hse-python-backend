@@ -1,4 +1,4 @@
-name: Run tests and linter 
+name: Run tests 
 on:
     push:
       branches: [ "main" ]
