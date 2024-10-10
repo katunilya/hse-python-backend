@@ -2,7 +2,7 @@ name: Run python tests
 
 on:
   push:
-    branches: ["main"]
+    branches: ["hw2vp"]
   pull_request:
     branches: ["main"]
 
