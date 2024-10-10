@@ -91,11 +91,11 @@ def patch_item(id: int, updated_fields: dict):
 
 @app.delete("/item/{id}")
 def delete_item(id: int):
-    item = get_item_by_id(id)
-    if item:
-        item.deleted = True
-        return {"message": "Item deleted"}
-    raise HTTPException(detail="Item not found", status_code=HTTPStatus.NOT_FOUND)
+    for item in items:
+        if item.id == id:
+            item.deleted = True
+            return {"message": "Item deleted"}
+    raise HTTPException( detail="Item not found", status_code=HTTPStatus.NOT_FOUND)
 
 @app.get("/item", response_model=List[Item])
 def list_items(
