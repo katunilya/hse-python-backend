@@ -5,7 +5,7 @@ services:
     image: python-backend-lecture-3-dev:latest
     build:
       context: .
-      dockerfile: ./docker/demo_service/Dockerfile
+      dockerfile: ./docker/shop_api/Dockerfile
       target: dev
     restart: always
 
@@ -13,7 +13,7 @@ services:
     image: python-backend-lecture-3-local:latest
     build:
       context: .
-      dockerfile: ./docker/demo_service/Dockerfile
+      dockerfile: ./docker/shop_api/Dockerfile
       target: local
     restart: always
     ports:
