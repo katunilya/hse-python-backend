@@ -1,24 +1,27 @@
-name: Run tests 
+name: Run python tests
+
 on:
-    push:
-      branches: [ "main" ]
-    pull_request:
-      branches: [ "main" ]
+  push:
+    branches: ["main"]
+  pull_request:
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-        
-        steps:
-            - uses: actions/checkout@v4
-            - name: Set up Python 3.12
-              uses: actions/setup-python@v5
-              with:
-                  python-version: '3.12' 
-            - name: Install Poetry
-              uses: abatilo/actions-poetry@v2
-            - name: Install dependencies with Poetry
-              run: poetry install
-            - name: Run tests
-              run: poetry run pytest -vv --strict --showlocals
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
+      - name: Install dependencies with poetry
+        run: poetry install
+      - name: Run tests
+        run: poetry run pytest -vv --strict --showlocals
