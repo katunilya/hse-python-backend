@@ -44,7 +44,7 @@ async def test_not_found(method: str, path: str):
 )
 async def test_factorial(query: dict[str, Any], status_code: int):
     async with TestClient(app) as client:
-        response = await client.get("/factorial", params=query)
+        response = await client.get("/factorial", query_string=query)
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
@@ -65,7 +65,7 @@ async def test_factorial(query: dict[str, Any], status_code: int):
 )
 async def test_fibonacci(params: str, status_code: int):
     async with TestClient(app) as client:
-        response = client.get("/fibonacci" + params)
+        response = await client.get("/fibonacci" + params)
 
     assert response.status_code == status_code
     if status_code == HTTPStatus.OK:
