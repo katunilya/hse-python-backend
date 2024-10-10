@@ -136,7 +136,7 @@ def get_item(id: int):
         'id': item.id,
         'name': item.name,
         'price': item.price,
-        'deleted': item.deleted
+
     }
 
 
