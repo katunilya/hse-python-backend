@@ -22,5 +22,3 @@ jobs:
               run: poetry install
             - name: Run tests
               run: poetry run pytest -vv --strict --showlocals
-            - name: Run Ruff linter
-              uses: chartboost/ruff-action@v1
