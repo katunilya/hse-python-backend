@@ -14,3 +14,9 @@ Python => 3.7
 Swagger UI: http://127.0.0.1:8000/docs
 
 ReDoc: http://127.0.0.1:8000/redoc
+
+## Launch HW_3
+    cd rest_api_internet_shop
+    docker-compose up --build
+    # в новом терминале для симуляции активности в приложении
+    python user_activity.py 
