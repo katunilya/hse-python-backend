@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "shop_service"
+    static_configs:
+      - targets: ["shop_service:8000"]
