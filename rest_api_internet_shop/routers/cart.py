@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Path, Query, Response
 from typing import List, Optional
 
-from rest_api_internet_shop.models import Cart, CartResponse, CartItem
-from rest_api_internet_shop.database import data_store
+from models import Cart, CartResponse, CartItem
+from database import data_store
 
 router = APIRouter()
 

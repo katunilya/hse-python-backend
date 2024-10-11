@@ -1,5 +1,5 @@
 from typing import Dict
-from rest_api_internet_shop.models import Item, Cart
+from models import Item, Cart
 
 
 class DataStore:

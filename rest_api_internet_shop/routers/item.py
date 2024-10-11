@@ -1,11 +1,9 @@
-# routers/item.py
-
 from fastapi import APIRouter, HTTPException, Path, Query, Body, Response
 from typing import List, Optional
 from http import HTTPStatus
 
-from rest_api_internet_shop.models import Item, ItemCreate, ItemUpdate, ItemPatch
-from rest_api_internet_shop.database import data_store
+from models import Item, ItemCreate, ItemUpdate, ItemPatch
+from database import data_store
 
 router = APIRouter()
 
