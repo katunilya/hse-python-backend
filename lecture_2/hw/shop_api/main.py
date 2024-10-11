@@ -2,9 +2,12 @@ from fastapi import FastAPI, HTTPException, status, Query, Response
 from fastapi.responses import JSONResponse
 from typing import Optional, Dict, List
 from pydantic import BaseModel
-from lecture_2.hw.shop_api.models import Item, Cart, CartItem, ItemPost, ItemPatch
+from .models import Item, Cart, CartItem, ItemPost, ItemPatch
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="Shop API")
+
+Instrumentator().instrument(app).expose(app)
 
 items: Dict[int, Item] = {}
 carts: Dict[int, Cart] = {}
