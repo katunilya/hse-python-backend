@@ -94,7 +94,7 @@
 Чтобы запустить тесты только для этого задания вызовите:
 
 ```sh
-poetry run pytest -vv --showlocals --strict ./tests/test_homework_2_1.py
+poetry run pytest -vv --showlocals --strict ./tests/test_homework_2.py
 ```
 
 ## Доп. Задание - WebSocket (+1 доп балл)
