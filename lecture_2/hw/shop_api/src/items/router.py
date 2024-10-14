@@ -1,10 +1,11 @@
 from http import HTTPStatus
-from typing import Optional
-from fastapi import APIRouter, HTTPException, Response
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Response, Query
 
 from lecture_2.hw.shop_api.src.items.schema import Item, ItemDto
 from lecture_2.hw.shop_api.utils import generate_id
-from lecture_2.hw.shop_api.storage import carts, items
+from lecture_2.hw.shop_api.storage import items
+from pydantic import NonNegativeInt, PositiveInt, PositiveFloat
 
 item_router = APIRouter()
 
@@ -26,19 +27,13 @@ def get_item(id: int):
 
 
 @item_router.get("/")
-def get_items(offset: int = 0, limit: int = 10, min_price: Optional[float] = None, max_price: Optional[float] = None, show_deleted: bool = False):
-    if (offset < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="offset is negative")
-    
-    if (limit <= 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="offset isn't positive")
-    
-    if (min_price and min_price < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="min_price is negative")
-    
-    if (max_price and max_price < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="max_price is negative")
-    
+def get_items(
+    offset: Annotated[NonNegativeInt, Query()] = 0, 
+    limit: Annotated[PositiveInt, Query()] = 10, 
+    min_price: Annotated[PositiveFloat, Query()] = None, 
+    max_price: Annotated[PositiveFloat, Query()] = None, 
+    show_deleted: bool = False
+):
     result = [
         item for item in items.values()
         if (show_deleted or not item.deleted)

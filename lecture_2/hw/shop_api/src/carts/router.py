@@ -1,6 +1,8 @@
 from http import HTTPStatus
-from typing import Optional
-from fastapi import APIRouter, HTTPException, Response
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Response, Query
+
+from pydantic import NonNegativeInt, PositiveInt, PositiveFloat
 
 from lecture_2.hw.shop_api.src.carts.schema import Cart, CartItem
 from lecture_2.hw.shop_api.utils import generate_id
@@ -25,25 +27,14 @@ def get_cart(id: int):
 
 
 @cart_router.get("/")
-def get_carts(offset: int = 0, limit: int = 10, min_price: Optional[float] = None, max_price: Optional[float] = None, min_quantity: Optional[int] = None, max_quantity: Optional[int] = None):
-    if (offset < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="offset is negative")
-    
-    if (limit <= 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="offset isn't positive")
-    
-    if (min_price and min_price < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="min_price is negative")
-    
-    if (max_price and max_price < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="max_price is negative")
-    
-    if (min_quantity and min_quantity < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="min_quantity is negative")
-    
-    if (max_quantity and max_quantity < 0):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="max_quantity is negative")
-    
+def get_carts(
+    offset: Annotated[NonNegativeInt, Query()] = 0, 
+    limit: Annotated[PositiveInt, Query()] = 10, 
+    min_price: Annotated[PositiveFloat, Query()] = None, 
+    max_price: Annotated[PositiveFloat, Query()] = None, 
+    min_quantity: Annotated[NonNegativeInt, Query()] = None, 
+    max_quantity: Annotated[NonNegativeInt, Query()] = None 
+):
     result = [
         cart for cart in carts.values()
         if (min_price is None or cart.price >= min_price)
@@ -61,6 +52,7 @@ def add_item_to_cart(cart_id: int, item_id: int):
 
     if not cart:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Cart not found")
+    
     if not item or item.deleted:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Item not found")
 
