@@ -2,11 +2,46 @@ from fastapi import FastAPI, HTTPException
 from starlette import status
 from starlette.responses import JSONResponse
 
+from prometheus_client import Counter, generate_latest, Histogram, Gauge
 from .models import Item, Cart, CartItem
 from typing import List
 from pydantic import BaseModel, conint, condecimal
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 app = FastAPI(title="Shop API")
+
+# Метрики
+REQUEST_COUNT = Counter("request_count", "Количество запросов", ["method", "endpoint"])
+REQUEST_LATENCY = Histogram("request_latency_seconds", "Время обработки запросов", ["method", "endpoint"])
+IN_PROGRESS = Gauge("in_progress_requests", "Количество активных запросов")
+
+# Middleware для сбора метрик
+class PrometheusMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        # Увеличиваем количество активных запросов
+        IN_PROGRESS.inc()
+
+        # Измеряем время выполнения запроса
+        with REQUEST_LATENCY.labels(method=request.method, endpoint=request.url.path).time():
+            response = await call_next(request)
+
+        # Инкрементируем счетчик запросов
+        REQUEST_COUNT.labels(method=request.method, endpoint=request.url.path).inc()
+
+        # Уменьшаем количество активных запросов
+        IN_PROGRESS.dec()
+
+        return response
+
+app.add_middleware(PrometheusMiddleware)
+
+
+# Эндпоинт для метрик
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type="text/plain")
+
 
 carts = {}
 items = {}
