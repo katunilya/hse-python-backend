@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi import Response
 from http import HTTPStatus
 from pydantic import BaseModel
+from prometheus_fastapi_instrumentator import Instrumentator
 
 class CartItems(BaseModel): 
     
@@ -33,6 +34,7 @@ class ItemPatchRequest(BaseModel):
     price : Optional[float | None]
 
 app = FastAPI()
+Instrumentator().instrument(app).expose(app)
 
 carts_base = dict()
 items = dict()
