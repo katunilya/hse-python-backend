@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  fastapi:
+    build: .
+    ports:
+      - "8000:8000"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Подключаем конфигурацию
+    ports:
+      - "9090:9090"  # Порт для доступа к интерфейсу Prometheus
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"  # Порт, на котором Grafana будет доступна
+    volumes:
+      - grafana_data:/var/lib/grafana  # Сохраняем данные Grafana
+
+volumes:
+  grafana_data:
