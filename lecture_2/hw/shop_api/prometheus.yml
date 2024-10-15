@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s  # Интервал сбора метрик (15 секунд)
+
+scrape_configs:
+  - job_name: 'fastapi-shop'  # Название задачи (любое название)
+    static_configs:
+      - targets: ['fastapi:8000']  # Адрес FastAPI-приложения внутри сети Docker
