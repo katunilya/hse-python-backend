@@ -16,17 +16,17 @@ router = APIRouter(prefix='/cart')
 async def post_cart(response: Response) -> CartResponse:
     cart = queries.add_cart()
     response.headers['location'] = f'/cart/{cart.id}'
-    return cart
+    return CartResponse.from_entity(cart)
 
 # GET get cart
 @router.get(
     '/{cart_id}',
     responses={
         HTTPStatus.OK: {
-            'description: Successfully returned requested cart'
+            'description': 'Successfully returned requested cart'
         },
         HTTPStatus.NOT_FOUND: {
-            'description: Failed to return requested cart as one was not found'
+            'description': 'Failed to return requested cart as one was not found'
         }
     },
     response_model=CartResponse
@@ -40,7 +40,7 @@ async def get_cart(cart_id: int) -> CartResponse:
             f'Request resource /cart/{id} was not found'
         )
     
-    return entity
+    return CartResponse.from_entity(entity)
 
 # GET get cart list
 @router.get('/', response_model=list)
@@ -56,17 +56,19 @@ async def get_carts(
     entities = queries.get_carts(min_price, max_price, 
                                  min_quantity, max_quantity, 
                                  offset, limit)
-    return entities
+    
+    response = [CartResponse.from_entity(entity) for entity in entities]
+    return response
 
 # POST add item to cart
 @router.post(
     '/{cart_id}/add/{item_id}',
     responses={
         HTTPStatus.OK: {
-            'description: Successfully returned requested cart'
+            'description': 'Successfully returned requested cart'
         },
         HTTPStatus.NOT_FOUND: {
-            'description: Failed to return requested cart as one was not found'
+            'description': 'Failed to return requested cart as one was not found'
         }
     },
     response_model=CartResponse,
@@ -78,4 +80,4 @@ async def add_item_to_cart(cart_id: int, item_id: int) -> CartResponse:
             HTTPStatus.NOT_FOUND,
             f'Request resource /cart/{id} was not found'
         )
-    return cart
+    return CartResponse.from_entity(cart)

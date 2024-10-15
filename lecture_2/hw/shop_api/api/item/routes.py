@@ -16,17 +16,17 @@ router = APIRouter(prefix='/item')
 async def post_item(response: Response) -> ItemResponse:
     item = queries.add_item()
     response.headers['location'] = f'/item/{item.id}'
-    return item
+    return ItemResponse.from_entity(item)
 
 # GET get item
 @router.get(
     '/{item_id}',
     responses={
         HTTPStatus.OK: {
-            'description: Successfully returned requested item'
+            'description': 'Successfully returned requested item'
         },
         HTTPStatus.NOT_FOUND: {
-            'description: Failed to return requested item as one was not found'
+            'description': 'Failed to return requested item as one was not found'
         }
     },
     response_model=ItemResponse
@@ -40,7 +40,7 @@ async def get_item(item_id: int) -> ItemResponse:
             f'Request resource /item/{id} was not found'
         )
     
-    return entity
+    return ItemResponse.from_entity(entity)
 
 # GET get item list
 @router.get('/', response_model=List[ItemResponse])
@@ -54,7 +54,9 @@ async def get_items(
     
     entities = queries.get_items(min_price, max_price,
                                  offset, limit, show_deleted)
-    return entities
+    
+    response = [ItemResponse.from_entity(entity) for entity in entities]
+    return response
 
 # PUT replace item
 @router.put(
@@ -62,10 +64,10 @@ async def get_items(
         response_model=ItemResponse,
         responses={
         HTTPStatus.OK: {
-            'description: Successfully returned requested item'
+            'description': 'Successfully returned requested item'
         },
         HTTPStatus.NOT_FOUND: {
-            'description: Failed to return requested item as one was not found'
+            'description': 'Failed to return requested item as one was not found'
         }
     })
 async def replace_item(id: int, data: ItemRequest) -> ItemResponse:
@@ -75,7 +77,7 @@ async def replace_item(id: int, data: ItemRequest) -> ItemResponse:
             HTTPStatus.NOT_FOUND,
             f'Request resource /item/{id} was not found'
         )
-    return changed_item
+    return ItemResponse.from_entity(changed_item)
 
 # PATCH update item
 @router.patch(
@@ -105,7 +107,7 @@ async def patch_item(id: int, item_data: ItemPatchRequest) -> ItemResponse:
             HTTPStatus.NOT_MODIFIED,
             'Failed to modify data'
         )
-    return patched_item
+    return ItemResponse.from_entity(patched_item)
         
 
 # DELETE delete item
@@ -113,10 +115,10 @@ async def patch_item(id: int, item_data: ItemPatchRequest) -> ItemResponse:
     '/{id}',
     responses={
         HTTPStatus.OK: {
-            'description: Successfully returned requested item'
+            'description': 'Successfully returned requested item'
         },
         HTTPStatus.NOT_FOUND: {
-            'description: Failed to return requested item as one was not found'
+            'description': 'Failed to return requested item as one was not found'
         }
     },
     status_code=HTTPStatus.OK
