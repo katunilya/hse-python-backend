@@ -3,8 +3,8 @@ version: '3.8'
 services:
   shop_api:
     build:
-      context: ..  # Указываем на директорию выше, то есть корень проекта
-      dockerfile: lecture_2/hw/Dockerfile  # Путь к Dockerfile от корня проекта
+      context: ../../../
+      dockerfile: lecture_2/hw/Dockerfile
     ports:
       - "8000:8000"
     networks:
@@ -13,7 +13,7 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Относительный путь к prometheus.yml
     ports:
       - "9090:9090"
     networks:
@@ -29,6 +29,14 @@ services:
       - monitoring
     volumes:
       - grafana_data:/var/lib/grafana
+
+  k6:
+    image: grafana/k6
+    networks:
+      - monitoring
+    command: run /scripts/load_test.js
+    volumes:
+      - ./load_test.js:/scripts/load_test.js  # Относительный путь к load_test.js
 
 networks:
   monitoring:

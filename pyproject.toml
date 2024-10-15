@@ -19,6 +19,7 @@ prometheus-fastapi-instrumentator = "^7.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.5"
+pre-commit = "^3.8.0"
 
 
 [tool.poetry.group.test.dependencies]
