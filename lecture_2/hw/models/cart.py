@@ -2,7 +2,7 @@ from dataclasses import Field, dataclass, field
 from typing import List
 
 from pydantic import BaseModel, ConfigDict
-from models.item import *
+from lecture_2.hw.models.item import *
 
 class ItemInCart(BaseModel):
     id: int

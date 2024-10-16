@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from models.item import *
-from models.cart import *
+from lecture_2.hw.models.item import *
+from lecture_2.hw.models.cart import *
 
 class ItemResponce(BaseModel):
     id: int

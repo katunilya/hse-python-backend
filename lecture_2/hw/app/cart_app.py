@@ -3,9 +3,9 @@ import logging
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import NonNegativeInt, PositiveInt
-from responce.contract import *
-from models.cart import *
-from store.queries import *
+from lecture_2.hw.responce.contract import *
+from lecture_2.hw.models.cart import *
+from lecture_2.hw.store.queries import *
 
 
 cart_router = APIRouter(prefix="/cart")

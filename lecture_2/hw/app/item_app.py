@@ -2,9 +2,9 @@ from http import HTTPStatus
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import NonNegativeInt, PositiveInt
-from responce.contract import *
-from models.item import *
-from store.queries import *
+from lecture_2.hw.responce.contract import *
+from lecture_2.hw.models.item import *
+from lecture_2.hw.store.queries import *
 
 item_router = APIRouter(prefix="/item")
 
