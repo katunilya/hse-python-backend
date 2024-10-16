@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "myapp"
+version = "0.1.0"
+description = "for hw"
+authors = ["Korshunov Ilya"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+uvicorn = "^0.18.0"
+fastapi = "^0.100.0"
+prometheus_client = "^0.13.0"
+prometheus-fastapi-instrumentator = "^6.0.0"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
