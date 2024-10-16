@@ -1,10 +1,10 @@
-name: Run python tests
+name: Run Python Tests
 
 on:
   push:
-    branches: ["main"]
+    branches: ['**']  # Trigger on push to any branch
   pull_request:
-    branches: ["main"]
+    branches: ['**']  # Trigger on any pull request to any branch
 
 jobs:
   build:
@@ -20,11 +20,9 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install poetry
+      - name: Install Poetry
         uses: abatilo/actions-poetry@v2
-      - name: Install dependencies with poetry
+      - name: Install dependencies with Poetry
         run: poetry install
       - name: Run tests
         run: poetry run pytest -vv --strict --showlocals
-      - name: Run lecture 4 tests
-        run: poetry run pytest -vv --strict --showlocals --cov=lecture_4/demo_service ./tests/lecture_4/hw
