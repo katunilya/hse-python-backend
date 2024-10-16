@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from routers import item, cart
+from rest_api_internet_shop.routers import item, cart
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
