@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  local:
+    image: myapp-image
+    build: 
+      context: ../
+      dockerfile: docker/Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - get_data
+
+  grafana:
+    image: grafana/grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    networks:
+      - get_data
+
+  prometheus:
+    image: prom/prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - get_data
+
+networks:  
+  get_data:
+    driver: bridge
+
