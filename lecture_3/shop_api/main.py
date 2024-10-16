@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from lecture_2.hw.shop_api.api import router
+from api import router
 
 from prometheus_fastapi_instrumentator import Instrumentator
 app = FastAPI(title="Shop API")
-# Instrumentator().instrument(app).expose(app)
+Instrumentator().instrument(app).expose(app)
 app.include_router(router)
 
 # if __name__ == '__main__':

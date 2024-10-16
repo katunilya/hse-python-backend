@@ -10,19 +10,22 @@ def create_users():
     for _ in range(500):
         user = faker.profile()
         response = requests.post(
-            "http://localhost:8080/cart",
-
+            "http://localhost:8080/create-user",
+            json={
+                "username": user["username"],
+                "first_name": user["name"],
+                "last_name": "",
+            },
         )
 
         print(response)
 
 
 def get_users():
-    for i in range(500):
-        
-        response = requests.get(
-            f"http://localhost:8080/1",
-            # params={"id": faker.random_number(digits=2)},
+    for _ in range(500):
+        response = requests.post(
+            "http://localhost:8080/get-user",
+            params={"id": faker.random_number(digits=2)},
         )
         print(response)
 
