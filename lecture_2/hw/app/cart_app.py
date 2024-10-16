@@ -7,6 +7,7 @@ from responce.contract import *
 from models.cart import *
 from store.queries import *
 
+
 cart_router = APIRouter(prefix="/cart")
 
 @cart_router.get(

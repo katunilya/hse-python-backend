@@ -1,8 +1,10 @@
 
 from fastapi import FastAPI
 import logging
-from app.item_app import item_router
-from app.cart_app import cart_router
+from .item_app import item_router
+from .cart_app import cart_router
+
+
 
 logging.basicConfig(level=logging.INFO)
 
