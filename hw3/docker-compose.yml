@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  shop_service:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: shop_service
+    ports:
+      - "8000:8000"
+    networks:
+      - monitoring
+    expose:
+      - 8000
+    labels:
+      - "monitoring_target=true"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  grafana_data:

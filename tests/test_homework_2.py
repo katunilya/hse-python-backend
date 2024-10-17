@@ -76,7 +76,6 @@ def deleted_item(existing_item: dict[str, Any]) -> dict[str, Any]:
     return existing_item
 
 
-@pytest.mark.xfail()
 def test_post_cart() -> None:
     response = client.post("/cart")
 
@@ -85,7 +84,6 @@ def test_post_cart() -> None:
     assert "id" in response.json()
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("cart", "not_empty"),
     [
@@ -116,7 +114,6 @@ def test_get_cart(request, cart: int, not_empty: bool) -> None:
         assert response_json["price"] == 0.0
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -160,7 +157,6 @@ def test_get_cart_list(query: dict[str, Any], status_code: int):
             assert quantity <= query["max_quantity"]
 
 
-@pytest.mark.xfail()
 def test_post_item() -> None:
     item = {"name": "test item", "price": 9.99}
     response = client.post("/item", json=item)
@@ -172,7 +168,6 @@ def test_post_item() -> None:
     assert item["name"] == data["name"]
 
 
-@pytest.mark.xfail()
 def test_get_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
 
@@ -182,7 +177,6 @@ def test_get_item(existing_item: dict[str, Any]) -> None:
     assert response.json() == existing_item
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("query", "status_code"),
     [
@@ -217,7 +211,6 @@ def test_get_item_list(query: dict[str, Any], status_code: int) -> None:
             assert all(item["deleted"] is False for item in data)
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("body", "status_code"),
     [
@@ -242,7 +235,6 @@ def test_put_item(
         assert response.json() == new_item
 
 
-@pytest.mark.xfail()
 @pytest.mark.parametrize(
     ("item", "body", "status_code"),
     [
@@ -280,7 +272,6 @@ def test_patch_item(request, item: str, body: dict[str, Any], status_code: int) 
         assert patched_item == patch_response_body
 
 
-@pytest.mark.xfail()
 def test_delete_item(existing_item: dict[str, Any]) -> None:
     item_id = existing_item["id"]
 
