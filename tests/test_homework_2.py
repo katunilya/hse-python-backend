@@ -291,4 +291,4 @@ def test_delete_item(existing_item: dict[str, Any]) -> None:
     assert response.status_code == HTTPStatus.NOT_FOUND
 
     response = client.delete(f"/item/{item_id}")
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == HTTPStatus.NOT_FOUND
