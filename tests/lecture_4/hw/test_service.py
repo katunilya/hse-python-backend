@@ -1,5 +1,6 @@
 from datetime import datetime
 import pytest
+from http import HTTPStatus
 from lecture_4.demo_service.api.main import create_app
 from fastapi.testclient import TestClient
 from lecture_4.demo_service.api.contracts import UserResponse, RegisterUserRequest, UserAuthRequest
@@ -61,21 +62,14 @@ def client():
     with TestClient(new_app) as app:
         yield app
 
-def test_password_is_longer_than_8():
-    assert password_is_longer_than_8(SecretStr('123456798')) == True
-    assert password_is_longer_than_8(SecretStr('123')) == False
-    assert password_is_longer_than_8(SecretStr('')) == False
-
-
 
 def test_register_user(client, user_info):
     registration_data = user_info.model_dump()
     registration_data["password"] = user_info.password.get_secret_value()
     registration_data["birthdate"] = user_info.birthdate.isoformat()
 
-
     response = client.post("/user-register", json=registration_data)
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json()["username"] == user_info.username
     assert response.json()["name"] == user_info.name
     assert response.json()["birthdate"] == user_info.birthdate.isoformat()
@@ -88,7 +82,7 @@ def test_password_reg(client, user_info):
     registration_data["birthdate"] = user_info.birthdate.isoformat()
 
     register_response = client.post("/user-register", json=registration_data)
-    assert register_response.status_code == 400
+    assert register_response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_get_user_by_user(client, user_info, entity):
@@ -99,25 +93,22 @@ def test_get_user_by_user(client, user_info, entity):
 
     registration_response = client.post("/user-register", json=registration_data)
     user_id = registration_response.json()["uid"]
-
     fetch_response = client.post("/user-get", params={'id': user_id}, auth=credentials)
 
-    assert fetch_response.status_code == 200
+    assert fetch_response.status_code == HTTPStatus.OK
     assert fetch_response.json()["name"] == user_info.name
     assert fetch_response.json()["username"] == user_info.username
     assert fetch_response.json()["role"] == user_info.role
-
-
 
 
     invalid_user_fetch_response = client.post(
         "/user-get",
         params={'id': entity.uid, 'username': entity.info.username}, auth=credentials
     )
-    assert invalid_user_fetch_response.status_code == 400
+    assert invalid_user_fetch_response.status_code == HTTPStatus.BAD_REQUEST
 
     empty_params_response = client.post("/user-get", params={}, auth=credentials)
-    assert empty_params_response.status_code == 400
+    assert empty_params_response.status_code == HTTPStatus.BAD_REQUEST
 
     wrong_password_auth = (user_info.username, "wrong_password")
     unauthorized_response = client.post(
@@ -125,10 +116,10 @@ def test_get_user_by_user(client, user_info, entity):
         params={'id': registration_response.json().get("uid")},
         auth=wrong_password_auth
     )
-    assert unauthorized_response.status_code == 401
+    assert unauthorized_response.status_code == HTTPStatus.UNAUTHORIZED
 
     non_existent_id_response = client.post("/user-get", params={'id': 9,'username': entity.info.username}, auth=credentials)
-    assert non_existent_id_response.status_code == 400
+    assert non_existent_id_response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_promote(client, user_info):
@@ -138,7 +129,13 @@ def test_promote(client, user_info):
     credentials = (user_info.username, user_info.password.get_secret_value())
 
     register_response = client.post("/user-register", json=registration_data)
-    assert register_response.status_code == 200
+
+    assert register_response.status_code == HTTPStatus.OK
 
     promote_response = client.post("/user-promote", params={'id': register_response.json()["uid"]}, auth=credentials)
-    assert promote_response.status_code == 403
+    assert promote_response.status_code == HTTPStatus.FORBIDDEN
+
+def test_password_is_longer_than_8():
+    assert password_is_longer_than_8(SecretStr('123456798')) == True
+    assert password_is_longer_than_8(SecretStr('123')) == False
+    assert password_is_longer_than_8(SecretStr('')) == False
