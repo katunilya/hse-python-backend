@@ -7,8 +7,6 @@ from lecture_4.demo_service.core.users import UserInfo, UserRole, UserService, p
 from pydantic import  SecretStr
 
 
-demo_service = create_app()
-
 
 @pytest.fixture
 def registration_req():

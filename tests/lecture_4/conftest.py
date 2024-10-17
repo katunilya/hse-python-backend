@@ -1,8 +1,8 @@
 import pytest
 
 
-# async def to_str_async[_TVal](x: _TVal) -> str:
-#     return str(x)
+async def to_str_async[_TVal](x: _TVal) -> str:
+    return str(x)
 
 
 @pytest.fixture()
