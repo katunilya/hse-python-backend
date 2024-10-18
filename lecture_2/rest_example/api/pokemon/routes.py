@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import NonNegativeInt, PositiveInt
 
-from lecture_2.rest_example import store
+from ... import store
 
 from .contracts import (
     PatchPokemonRequest,
